@@ -1,5 +1,7 @@
 import Component from 'brindille-component'
-import { View, router } from '../index.js'
+// import { View, router } from '../index.js'
+import { View } from '../View2'
+import Router from '../Router2'
 import 'gsap'
 
 /**
@@ -16,20 +18,19 @@ class Section extends Component {
   }
 }
 
-// Initialize rooter with a list of routes and 
-router.start({
-  routes: ['home', {id: 'about'}],
-  verbose: true,
-  baseUrl: '', // Default
-  getContent: (path, baseUrl) => {
-    return window.fetch(baseUrl + path + '/partial.html').then(response => {
-      return response.text()
-    })
-  }
-})
-
 // Creates main Brindille App, the view will take care of switching pages
-new Component(document.body, {
+const app = new Component(document.body, {
   Section,
   View
+})
+
+// Initialize rooter with a list of routes and 
+const router = new Router({
+  routes: ['home', {id: 'about'}, {id: 'post', path: 'post/:id'}],
+  verbose: true,
+  view: app.findInstance('View'),
+  baseUrl: '', // Default
+  getContent: (path, baseUrl) => {
+    return window.fetch(baseUrl + path + '/partial.html').then(response => response.text())
+  }
 })

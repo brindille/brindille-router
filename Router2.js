@@ -1,44 +1,53 @@
-import page from 'page'
-import Emitter from 'emitter-component'
+// import page from 'page'
 import getRouteByPath from './utils/getRouteByPath'
 import parseRoutes from './utils/parseRoutes'
+import { checkLink, getLink } from './utils/checkLink'
 
 /**
  * Router class
  */
-export default class Router extends Emitter {
-  constructor () {
-    super()
+export default class Router {
+  constructor (options = {}) {
     this.loadRoute = this.loadRoute.bind(this)
     this.notFound = this.notFound.bind(this)
-  }
+    this.routeCompleted = this.routeCompleted.bind(this)
+    this.onLinkClick = this.onLinkClick.bind(this)
+    this.onStateUpdate = this.onStateUpdate.bind(this)
 
-  start (options = {}) {
     this.isFirstRoute = true
     this.isReady = true
 
     this.baseUrl = options.baseUrl || ''
-    this.getContent = options.getContent || (path => {
-      console.log('getContent', path)
-      return Promise.resolve(path)
-    })
+    this.getContent = options.getContent || (path => Promise.resolve(path))
     this.isVerbose = options.verbose && options.verbose === true
 
     this.log('baseUrl = "' + this.baseUrl + '"')
 
+    this.view = options.view
     this.routes = parseRoutes(options.routes || [])
     this.defaultRoute = this.routes[0]
+    this.subscribers = []
 
     this.routes.forEach(route => {
-      console.log('route prepare', route)
-      this.log('registering route:', '/' + route.path)
-      page(route.path, this.loadRoute)
+      this.log('registering route:', route.path)
     })
-    page('*', this.notFound)
 
-    page.base(this.baseUrl)
+    window.addEventListener('popstate', this.onStateUpdate)
+    window.addEventListener('click', this.onLinkClick)
 
-    page.start()
+    this.loadRoute(getLink(window.location))
+  }
+
+  onLinkClick (e) {
+    let link = checkLink(e)
+    if (link) {
+      this.goTo(link)
+    }
+  }
+
+  goTo (url) {
+    window.history.pushState(null, null, url)
+    this.onStateUpdate()
   }
 
   log (...messages) {
@@ -47,19 +56,46 @@ export default class Router extends Emitter {
     }
   }
 
+  dispose () {
+    this.subscribers = []
+    window.removeEventListener('popstate', this.onStateUpdate)
+  }
+
+  onStateUpdate () {
+    const url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search
+    const state = window.history.state
+    this.loadRoute(getLink(window.location))
+  }
+
+  /* ========================================================
+    PUB/SUB API
+  ======================================================== */
+  subscribe (subscriber) {
+    this.subscribers.push(subscriber)
+  }
+
+  unsubscribe (subscriber) {
+    for (let i = 0, l = this.subscribers.length; i < l; i++) {
+      if (this.subscribers[i] === subscriber) {
+        this.subscribers.splice(i, 1)
+        break
+      }
+    }
+  }
+
   /* ========================================================
     Not found / Default route
   ======================================================== */
   notFound (context) {
     this.log('notFound', context.path)
-    page.redirect('/' + this.defaultRoute.path)
+    // page.redirect('/' + this.defaultRoute.path)
   }
 
   /* ========================================================
     API
   ======================================================== */
   redirect (url) {
-    page(url)
+    // page(url)
   }
 
   fullRedirection (url) {
@@ -70,9 +106,8 @@ export default class Router extends Emitter {
   /* ========== ==============================================
     Main Controller
   ======================================================== */
-  loadRoute (context) {
-    let currentRoute = getRouteByPath(context.path, this.routes)
-    console.log('loadRoute', currentRoute)
+  loadRoute (path) {
+    let currentRoute = getRouteByPath(path, this.routes)
 
     // Stop handling route when trying to reach the current route path
     if (currentRoute === this.currentRoute) return
@@ -89,22 +124,26 @@ export default class Router extends Emitter {
     // If current route is first route, the dom is already present, we just need the view to launch transition in of current view
     if (this.isFirstRoute) {
       this.isFirstRoute = false
-      this.emit('first', () => {
-        this.routeCompleted()
+      this.view.showFirstPage().then(() => {
+        this.routeCompleted(true)
       })
-      return
+    } else {  
+      this.getContent(path, this.baseUrl)
+        .then(this.view.showPage)
+        .then(this.routeCompleted)
     }
-
-    this.getContent(context.path, this.baseUrl).then(content => {
-      this.emit('update', this.currentPageId, content, () => {
-        this.routeCompleted()
-      })
-    })
   }
 
-  routeCompleted () {
+  routeCompleted (wasFirstRoute = false) {
     // Everyting is over, app is ready to do stuff again
     this.isReady = true
+    this.subscribers.forEach(subscriber => {
+      subscriber({
+        id: this.currentPageId,
+        path: this.currentPath,
+        isFirstRoute: wasFirstRoute
+      })
+    })
   }
 
   get currentPath () { return this.currentRoute.path }

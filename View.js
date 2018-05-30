@@ -1,5 +1,5 @@
 import Component from 'brindille-component'
-import { router } from './Router'
+import { router } from './'
 import safeCallbackedCall from './utils/safeCallbackedCall'
 
 export class View extends Component {

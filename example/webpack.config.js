@@ -35,6 +35,16 @@ module.exports = {
       filename: 'about/index.html',
       page: 'about',
       template: 'template.html'
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'post/1/index.html',
+      page: 'post/1',
+      template: 'template.html'
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'post/2/index.html',
+      page: 'post/2',
+      template: 'template.html'
     })
   ]
 }

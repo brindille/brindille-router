@@ -22,5 +22,5 @@ export default function getRouteByPath (path, routes = []) {
     }
     return false
   })
-  return route || routes[0]
+  return Object.assign({}, route || routes[0])
 }
