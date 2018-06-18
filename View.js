@@ -1,54 +1,64 @@
 import Component from 'brindille-component'
-import { router } from './'
 import safeCallbackedCall from './utils/safeCallbackedCall'
 
-export class View extends Component {
+export default class View extends Component {
   constructor ($el) {
     super($el)
 
-    this.onRoute = this.onRoute.bind(this)
+    this.showPage = this.showPage.bind(this)
     this.showFirstPage = this.showFirstPage.bind(this)
-
-    router.on('update', this.onRoute)
-    router.once('first', this.showFirstPage)
   }
 
-  dispose () {
-    router.off('update', this.onRoute)
-    router.off('first', this.showFirstPage)
-    super.dispose()
+  showFirstPage () {
+    return new Promise((resolve, reject) => {
+      this.currentPage = this._componentInstances[0]
+      safeCallbackedCall(this.currentPage, 'transitionIn', () => {
+        resolve(true)
+      })
+    })
   }
 
-  showFirstPage (done) {
-    this.currentPage = this._componentInstances[0]
-    safeCallbackedCall(this.currentPage, 'transitionIn', done)
+  showPage (content) {
+    this.content = content
+    this.currentPage = this.createSection(content)
+    return this.transitionOutAndAfterIn()
   }
 
-  transitionOutAndAfterIn (done) {
-    const oldPage = this._componentInstances[this._componentInstances.length - 1]
-    const onTransitionOutComplete = () => {
-      this.removeAllChilds()
+  transitionOutAndAfterIn () {
+    return new Promise((resolve, reject) => {
+      const oldPage = this._componentInstances[this._componentInstances.length - 1]
+      safeCallbackedCall(oldPage, 'transitionOut', resolve)
+    }).then(() => {
+      return this.transitionIn()
+    })
+  }
+
+  transitionIn () {
+    return new Promise((resolve, reject) => {
+      this.disposeChildren()
       this.addNewPage()
-      safeCallbackedCall(this.currentPage, 'transitionIn', done)
-    }
-    safeCallbackedCall(oldPage, 'transitionOut', onTransitionOutComplete)
-  }
-
-  removeAllChilds () {
-    while (this._componentInstances.length) {
-      this._componentInstances[0].dispose()
-    } 
+      safeCallbackedCall(this.currentPage, 'transitionIn', resolve)
+    })
   }
 
   addNewPage () {
-    if (!this.currentPage.$el) return
-    this._componentInstances.push(this.currentPage)
-    this.$el.appendChild(this.currentPage.$el)
+    if (!this.currentPage.$el) {
+      this.$el.appendChild(this.currentPage)
+    } else {
+      this._componentInstances.push(this.currentPage)
+      this.$el.appendChild(this.currentPage.$el)
+    }
   }
 
   createSection (text) {
-    let $node = document.createElement('div')
+    const win = this.window || window
+    let $node = win.document.createElement('div')
     $node.innerHTML = text
+
+    if ($node.firstChild.nodeType === 3) {
+      return $node
+    }
+
     $node = $node.firstChild
 
     let componentName = $node.getAttribute('data-component')
@@ -62,22 +72,5 @@ export class View extends Component {
     section.parent = this
 
     return section
-  }
-
-  manageSpecialPages () {}
-
-  onRoute (id, content, done) {
-    window.scrollTo(0, 0)
-    this.currentPage = this.createSection(content)
-    this.content = content
-
-    if (this._componentInstances.length) {
-      this.transitionOutAndAfterIn(done)
-      this.manageSpecialPages(id)
-    } else {
-      this.removeAllChilds()
-      this.addNewPage()
-      done()
-    }
   }
 }

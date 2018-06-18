@@ -21,8 +21,8 @@ test('Simple getRouteByPath2', t => {
   t.is(getRouteByPath('/bar/toto', routes).id, 'bar')
 })
 
-test('Non existing path should return default route', t => {
-  t.is(getRouteByPath('/toto', routes).id, 'foo')
+test('Non existing path should return false', t => {
+  t.false(getRouteByPath('/toto', routes))
 })
 
 test('Non existing routes', t => {

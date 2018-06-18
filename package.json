@@ -6,17 +6,16 @@
   "author": "Guillaume Gouessan",
   "license": "MIT",
   "scripts": {
-    "test": "nyc ava"
+    "test": "nyc ava",
+    "start": "ava --watch"
   },
   "dependencies": {
-    "brindille-component": "^0.0.5",
-    "emitter-component": "^1.1.1",
-    "page": "^1.8.6"
+    "deep-equal": "^1.0.1",
+    "dush": "^3.0.5"
   },
   "ava": {
     "require": [
-      "@babel/register",
-      "./test/helpers/setup-browser-env.js"
+      "@babel/register"
     ]
   },
   "nyc": {
@@ -30,8 +29,11 @@
     "@babel/register": "^7.0.0-beta.47",
     "ava": "1.0.0-beta.4",
     "babel-plugin-istanbul": "^4.1.6",
+    "brindille-component": "^0.0.5",
     "browser-env": "^3.2.5",
+    "jsdom": "^11.11.0",
     "nyc": "^11.8.0",
-    "rollup": "^0.58.2"
+    "rollup": "^0.58.2",
+    "sinon": "^6.0.0"
   }
 }

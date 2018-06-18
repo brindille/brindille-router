@@ -1,154 +1,125 @@
-// import page from 'page'
+import equal from 'deep-equal'
+import dush from 'dush'
 import getRouteByPath from './utils/getRouteByPath'
 import parseRoutes from './utils/parseRoutes'
-import { checkLink, getLink } from './utils/checkLink'
+import { checkLink, getUrl } from './utils/checkLink'
 
-/**
- * Router class
- */
-export default class Router {
-  constructor (options = {}) {
-    this.loadRoute = this.loadRoute.bind(this)
-    this.notFound = this.notFound.bind(this)
-    this.routeCompleted = this.routeCompleted.bind(this)
-    this.onLinkClick = this.onLinkClick.bind(this)
-    this.onStateUpdate = this.onStateUpdate.bind(this)
+export default function createRouter (app, options = {}, win = window) {
+  if (!app || !app._componentInstances) {
+    throw new Error('First param of createRouter needs to be an instance of brindille component')
+  }
+  
+  const view = app.findInstance('View')
 
-    this.isFirstRoute = true
-    this.isReady = true
-
-    this.baseUrl = options.baseUrl || ''
-    this.getContent = options.getContent || (path => Promise.resolve(path))
-    this.isVerbose = options.verbose && options.verbose === true
-
-    this.log('baseUrl = "' + this.baseUrl + '"')
-
-    this.view = options.view
-    this.routes = parseRoutes(options.routes || [])
-    this.defaultRoute = this.routes[0]
-    this.subscribers = []
-
-    this.routes.forEach(route => {
-      this.log('registering route:', route.path)
-    })
-
-    window.addEventListener('popstate', this.onStateUpdate)
-    window.addEventListener('click', this.onLinkClick)
-
-    this.loadRoute(getLink(window.location))
+  if (!view) {
+    throw new Error('There is no View instance in your brindille App')
   }
 
-  onLinkClick (e) {
-    let link = checkLink(e)
+  let isFirstRoute = true
+  let isTransitionning = false
+  
+  const emitter = dush()
+
+  const baseUrl = options.baseUrl || ''
+  const getContent = options.getContent || (route => Promise.resolve(route.id))
+  const isVerbose = options.verbose && options.verbose === true
+  const notFoundHandler = options.notFoundHandler && typeof options.notFoundHandler === 'function' ? options.notFoundHandler : false
+  const routes = parseRoutes(Array.isArray(options.routes) && options.routes.length ? options.routes : ['home'])
+  const defaultRoute = routes[0]
+
+  let currentRoute = null
+  let previousRoute = null
+
+  win.addEventListener('popstate', onStateUpdate)
+  win.addEventListener('click', onClick)
+
+  log('baseUrl = "' + baseUrl + '"')
+  routes.forEach(route => {
+    log('registering route:', route.path)
+  })
+
+  onStateUpdate()
+
+  function onClick (e) {
+    let link = checkLink(e, win)
     if (link) {
-      this.goTo(link)
+      goTo(link)
     }
   }
 
-  goTo (url) {
-    window.history.pushState(null, null, url)
-    this.onStateUpdate()
-  }
-
-  log (...messages) {
-    if (this.isVerbose) {
+  function log (...messages) {
+    if (isVerbose) {
       console.log('[Router]', ...messages)
     }
   }
 
-  dispose () {
-    this.subscribers = []
-    window.removeEventListener('popstate', this.onStateUpdate)
+  function goTo (url) {
+    win.history.pushState(null, null, url)
+    onStateUpdate()
   }
 
-  onStateUpdate () {
-    const url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search
-    const state = window.history.state
-    this.loadRoute(getLink(window.location))
+  function dispose () {
+    emitter.off('update')
+    win.removeEventListener('popstate', onStateUpdate)
+    win.removeEventListener('click', onClick)
   }
 
-  /* ========================================================
-    PUB/SUB API
-  ======================================================== */
-  subscribe (subscriber) {
-    this.subscribers.push(subscriber)
+  function onStateUpdate () {
+    loadRoute(getUrl(win.location))
   }
 
-  unsubscribe (subscriber) {
-    for (let i = 0, l = this.subscribers.length; i < l; i++) {
-      if (this.subscribers[i] === subscriber) {
-        this.subscribers.splice(i, 1)
-        break
+  function loadRoute (path) {
+    let newRoute = getRouteByPath(path, routes)
+    if (!newRoute) {
+      if (notFoundHandler) {
+        return notFoundHandler(path)
+      } else {
+        newRoute = defaultRoute
       }
     }
-  }
-
-  /* ========================================================
-    Not found / Default route
-  ======================================================== */
-  notFound (context) {
-    this.log('notFound', context.path)
-    // page.redirect('/' + this.defaultRoute.path)
-  }
-
-  /* ========================================================
-    API
-  ======================================================== */
-  redirect (url) {
-    // page(url)
-  }
-
-  fullRedirection (url) {
-    let path = '/' + url
-    window.location.href = 'http://' + window.location.hostname + this.baseUrl + path
-  }
-
-  /* ========== ==============================================
-    Main Controller
-  ======================================================== */
-  loadRoute (path) {
-    let currentRoute = getRouteByPath(path, this.routes)
-
+    
     // Stop handling route when trying to reach the current route path
-    if (currentRoute === this.currentRoute) return
+    if (equal(newRoute, currentRoute)) return
 
     // When we start handling the route we tell the app we are busy
-    this.isReady = false
+    isTransitionning = true
 
     // Shift current and previous routes
-    this.previousRoute = this.currentRoute
-    this.currentRoute = currentRoute
+    previousRoute = currentRoute
+    currentRoute = newRoute
 
-    this.log('route:', this.currentPageId, this.isFirstRoute)
+    log('route:', currentRoute.id, isFirstRoute ? '(first)' : '')
 
     // If current route is first route, the dom is already present, we just need the view to launch transition in of current view
-    if (this.isFirstRoute) {
-      this.isFirstRoute = false
-      this.view.showFirstPage().then(() => {
-        this.routeCompleted(true)
-      })
+    if (isFirstRoute) {
+      isFirstRoute = false
+      view.showFirstPage()
+        .then(routeCompleted)
     } else {  
-      this.getContent(path, this.baseUrl)
-        .then(this.view.showPage)
-        .then(this.routeCompleted)
+      getContent(currentRoute, path, baseUrl)
+        .then(view.showPage)
+        .then(routeCompleted)
     }
   }
 
-  routeCompleted (wasFirstRoute = false) {
-    // Everyting is over, app is ready to do stuff again
-    this.isReady = true
-    this.subscribers.forEach(subscriber => {
-      subscriber({
-        id: this.currentPageId,
-        path: this.currentPath,
-        isFirstRoute: wasFirstRoute
-      })
-    })
+  function routeCompleted (wasFirstRoute = false) {
+    isTransitionning = false
+    emitter.emit('update', Object.assign({ isFirstRoute: wasFirstRoute }, currentRoute))
   }
 
-  get currentPath () { return this.currentRoute.path }
-  get currentPageId () { return this.currentRoute.id }
-  get previousPath () { return this.previousRoute.path }
-  get previousPageId () { return this.previousRoute.id }
-  get params () { return this.currentRoute.params || {} }
+  return {
+    dispose,
+    goTo,
+
+    get routes () { return routes.slice(0) },
+    get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
+    
+    get currentRoute () { return Object.assign({}, currentRoute) },
+    get previousRoute () { return Object.assign({}, previousRoute) },
+
+    get isTransitionning () { return isTransitionning },
+
+    on: (...opt) => emitter.on(...opt),
+    off: (...opt) => emitter.off(...opt)
+  }
 }
