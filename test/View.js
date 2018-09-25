@@ -1,7 +1,7 @@
 import test from 'ava'
 import View from '../View'
 // import Router from '../Router'
-import createRouter from '../router2'
+import createRouter from '../router'
 import jsdom from 'jsdom'
 import Component from 'brindille-component'
 import Section from './fixtures/Section'
@@ -36,9 +36,7 @@ const getContent = route => Promise.resolve(PAGES[route.id])
 
 const createBody = (content, dom) => {
   const div = dom.window.document.createElement('div')
-  div.innerHTML = `
-    <a href="/about" id="aboutlink">about</a>
-    <div data-component="View">${ content }</div>` 
+  div.innerHTML = `<div data-component="View">${ content }</div>` 
   return div
 }
 
@@ -60,9 +58,14 @@ const navigate = (pageId, dom) => {
 }
 
 const createClickEvent = (pageId, dom, tag = 'a') => {
+  const target = createLink(pageId, dom, tag)
+  return { target, currentTarget: target, preventDefault: () => {} }
+}
+
+const createLink = (pageId, dom, tag = 'a') => {
   const target = dom.window.document.createElement(tag)
   target.setAttribute('href', '/' + pageId)
-  return { target, currentTarget: target, preventDefault: () => {} }
+  return target
 }
 
 /* ------------------------------------
@@ -152,6 +155,7 @@ test.cb('Subscribing and Unsubscribing', t => {
     t.is(router.nbListeners, 0)
     t.end()
   }
+  t.is(router.nbListeners, 0)
   router.on('update', listener)
   router.on('update', empty)
   t.is(router.nbListeners, 2)
@@ -201,20 +205,21 @@ test('Goto', t => {
   t.is(router.currentRoute.id, 'about')
 })
 
-test('ClickLink', t => {
+test('Click event interception on a link tag should trigger routing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
-  const link = t.context.dom.window.document.getElementById('aboutlink')
+  const link = createLink('about', t.context.dom)
+  t.context.dom.window.document.body.appendChild(link)
   eventFire(link, 'click', t.context.dom.window.document)
   t.is(router.currentRoute.id, 'about')
 })
 
-// test('ClickLink no link', t => {
-//   const { router } = init(t.context.dom, ROUTES, 'home')
-//   const e = createClickEvent('about', t.context.dom, 'div')
-//   router.onLinkClick(e)
-
-//   t.is(router.currentRoute.id, 'home')
-// })
+test('Click event interception a div tag should do nothing', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home')
+  const link = createLink('about', t.context.dom, 'div')
+  t.context.dom.window.document.body.appendChild(link)
+  eventFire(link, 'click', t.context.dom.window.document)
+  t.is(router.currentRoute.id, 'home')
+})
 
 test.cb('Verbose mode', t => {
   let count = 0
@@ -288,4 +293,16 @@ test('View with no window', t => {
     view.createSection(PAGES['about'])
   })
   t.is(error1.message, message)
+})
+
+test('No view', t => {
+  const dom = t.context.dom
+  
+  dom.reconfigure({ url: URL + '/home' })
+  const body = dom.window.document.createElement('div')
+  const root = new Component(body, { Section, View })
+  const error = t.throws(() => {
+    createRouter(root, { routes: ROUTES, getContent }, dom.window)
+  })
+  t.is(error.message, 'There is no View instance in your brindille App')
 })

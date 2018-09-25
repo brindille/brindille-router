@@ -5,6 +5,7 @@
   "main": "index.js",
   "author": "Guillaume Gouessan",
   "license": "MIT",
+  "repository": "brindille/brindille-router",
   "scripts": {
     "test": "nyc ava",
     "start": "ava --watch"

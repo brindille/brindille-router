@@ -10,7 +10,7 @@ npm install brindille-router brindille-component --save
 Here's how you could make a basic brindille app with two pages. It assumes you are using an ES6 stack and a bundler like webpack.
 ```js
 import Component from 'brindille-component'
-import { View, Router } from 'brindille-router'
+import { View, createRouter } from 'brindille-router'
 
 /**
  * Create the base class for our pages
@@ -33,7 +33,7 @@ const app = new Component(document.body, { Section, View })
  * Initialize rooter with a list of routes and a getContent method
  * that returns a Promise which resolves the content of the new page 
  */
-const router = new Router(app, {
+const router = createRouter(app, {
   routes: ['home', 'about'],
   getContent: data => fetch(data.path + '.html').then(res => res.text())
 })
@@ -76,7 +76,7 @@ Creates a router instance
     // or
     routes: [{ id: 'home', path: '/home' }, { id: 'about', path: '/about' }]
     ```
-  - `getContent` **Function** The function that will be used by the router to grab your page content. The idea is for you to fetch your page partials from your server but you could also just pass static html from the js. The getContent method need to return a Promise.
+  - `getContent` **Function** The function that will be used by the router to grab your page content. The idea is for you to fetch your page partials from your server but you could also just pass html string from the js. The getContent method needs to return a Promise that resolves the content as text.
     ```js
     getContent: data => {
       return Promise.resolve(`<div>HTML for route: ${ data.route.id }</div>`)
