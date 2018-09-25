@@ -2,7 +2,7 @@
   "name": "brindille-router",
   "version": "0.0.1",
   "description": "All in one Router for Brindille",
-  "main": "index.js",
+  "module": "index.js",
   "author": "Guillaume Gouessan",
   "license": "MIT",
   "repository": "brindille/brindille-router",
