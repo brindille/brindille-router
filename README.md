@@ -63,7 +63,7 @@ router.start()
   <div data-component="View">
     <div data-component="Section">Home</div>
   </div>
-  <script src="bundle.js"/>
+  <script src="bundle.js"></script>
 </body></html>
 ```
 ```html
