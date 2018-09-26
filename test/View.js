@@ -89,6 +89,7 @@ test.afterEach(t => {
 ------------------------------------ */
 test('Simple Router instantiation', t => {
   const { router, view } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   t.truthy(view)
   t.is(router.currentRoute.id, 'home')
   t.is(router.currentRoute.path, '/home')
@@ -98,7 +99,8 @@ test('Simple Router instantiation', t => {
 })
 
 test('Simple Router instantiation with first route different than default route', t => {
-  const { router, view, body } = init(t.context.dom, ROUTES, 'about')
+  const { router, view } = init(t.context.dom, ROUTES, 'about')
+  router.start()
   t.truthy(view)
   t.is(router.currentRoute.id, 'about')
   t.is(router.currentRoute.path, '/about')
@@ -109,6 +111,7 @@ test('Simple Router instantiation with first route different than default route'
 
 test.cb('Changing route', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const listener = e => {
     if (e.isFirstRoute) {
       t.is(router.currentRoute.id, e.id)
@@ -132,6 +135,7 @@ test.cb('Changing route', t => {
 
 test('Route with params', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   router.goTo('/post/12')
   t.is(router.currentRoute.id, 'post')
   t.deepEqual(router.currentRoute.params, { id: '12' })
@@ -139,6 +143,7 @@ test('Route with params', t => {
 
 test.cb('Navigating to same Route than before', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const listener = e => {
     router.off('update', listener)
     navigate('home', t.context.dom)
@@ -150,6 +155,7 @@ test.cb('Navigating to same Route than before', t => {
 
 test.cb('Subscribing and Unsubscribing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const empty = () => {}
   const listener = () => {
     router.off('update', listener)
@@ -168,6 +174,7 @@ test.cb('Subscribing and Unsubscribing', t => {
 
 test.cb('No not found handler defaults to first route', t => {
   const { router } = init(t.context.dom, ROUTES, 'foo')
+  router.start()
   const listener = () => {
     router.off('update', listener)
     t.is(router.currentRoute.id, 'home')
@@ -177,11 +184,12 @@ test.cb('No not found handler defaults to first route', t => {
 })
 
 test.cb('Not Found handler on first route', t => {
-  init(t.context.dom, ROUTES, 'foo', {
+  const { router } = init(t.context.dom, ROUTES, 'foo', {
     notFoundHandler: () => {
       t.end()
     }
   })
+  router.start()
 })
 
 test.cb('Not Found handler on second route', t => {
@@ -192,6 +200,7 @@ test.cb('Not Found handler on second route', t => {
       t.end()
     }
   })
+  router.start()
   const listener = () => {
     navigate('foo', t.context.dom)
   }
@@ -200,18 +209,21 @@ test.cb('Not Found handler on second route', t => {
 
 test('Disposing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   router.dispose()
   t.is(router.nbListeners, 0)
 })
 
 test('Goto', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   router.goTo('/about')
   t.is(router.currentRoute.id, 'about')
 })
 
 test('Click event interception on a link tag should trigger routing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const link = createLink('about', t.context.dom)
   t.context.dom.window.document.body.appendChild(link)
   eventFire(link, 'click', t.context.dom.window.document)
@@ -220,6 +232,7 @@ test('Click event interception on a link tag should trigger routing', t => {
 
 test('Click event interception a div tag should do nothing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const link = createLink('about', t.context.dom, 'div')
   t.context.dom.window.document.body.appendChild(link)
   eventFire(link, 'click', t.context.dom.window.document)
@@ -235,7 +248,8 @@ test.cb('Verbose mode', t => {
       t.end()
     }
   })
-  init(t.context.dom, ROUTES, 'home', { verbose: true })
+  const { router } = init(t.context.dom, ROUTES, 'home', { verbose: true })
+  router.start()
 })
 
 test('No window in test mode throws an error', t => {
@@ -248,6 +262,7 @@ test('No window in test mode throws an error', t => {
 
 test.cb('proper isTransitionning values', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   const listener = e => {
     if (e.isFirstRoute) {
       t.false(router.isTransitionning)
@@ -278,6 +293,7 @@ test('No options at all will be punished!', t => {
 
 test.cb('No getContent in params defaults to simple promise that returns route.id', t => {
   const { router, view } = init(t.context.dom, ROUTES, 'home', { getContent: undefined })
+  router.start()
   const listener = e => {
     if (e.isFirstRoute) {
       router.goTo('/about')

@@ -47,6 +47,11 @@ const router = createRouter(app, {
   routes: ['home', 'about'],
   getContent: data => fetch(data.path + '.html').then(res => res.text())
 })
+
+/**
+ * Actually start the router
+ */ 
+router.start()
 ```
 ```html
 <!-- index.html -->
@@ -106,6 +111,12 @@ Creates a router instance
     ```
 
 **Methods**
+  - `router.start()` launches the routing.
+  - `router.goTo(path)` To manually navigate to another page.
+    ```js
+    router.goTo('/home')
+    ```
+  - `router.dispose()` Properly destroys the router instance.
   - `router.on(event, callback)` To register to the routing events on the router. Available events : `start`, `loaded`, `complete` and `update`.
   - `router.off(event, callback)` To unregister to the routing events on the router.
     ```js
@@ -114,6 +125,7 @@ Creates a router instance
       console.log(route.id, route.path, route.isFirstRoute)
     }
     router.on('update', onRoute)
+    router.start()
     // ...
     router.off('update', onRoute)
     ```

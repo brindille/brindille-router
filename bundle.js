@@ -605,16 +605,11 @@ function createRouter (app, options = {}, win = window) {
 
   let currentRoute = null;
   let previousRoute = null;
-
-  win.addEventListener('popstate', onStateUpdate);
-  win.addEventListener('click', onClick);
-
+  
   log('baseUrl = "' + baseUrl + '"');
   routes.forEach(route => {
     log('registering route:', route.path);
   });
-
-  onStateUpdate();
   
   function onClick (e) {
     let link = checkLink(e, win);
@@ -627,6 +622,17 @@ function createRouter (app, options = {}, win = window) {
     if (isVerbose) {
       console.log('[Router]', ...messages);
     }
+  }
+
+  /**
+   * Launch the routing
+   */
+  function start () {
+    log('start');
+    win.addEventListener('popstate', onStateUpdate);
+    win.addEventListener('click', onClick);
+    
+    onStateUpdate();
   }
 
   /**
@@ -698,8 +704,9 @@ function createRouter (app, options = {}, win = window) {
   }
 
   return {
-    dispose,
+    start,
     goTo,
+    dispose,
 
     get routes () { return routes.slice(0) },
     get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
