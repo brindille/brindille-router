@@ -112,9 +112,22 @@ Creates a router instance
 
 **Methods**
   - `router.start()` launches the routing.
+  - `router.stop()` stops the routing.
   - `router.goTo(path)` To manually navigate to another page.
     ```js
-    router.goTo('/home')
+    const routes = [
+      { id: 'home', path: '/some-complicated-home-path' }
+    ]
+    // ...
+    router.goTo('/some-complicated-home-path') // Navigates to route home
+    ```
+  - `router.goToId(id)` To manually navigate to another page from its id.
+    ```js
+    const routes = [
+      { id: 'home', path: '/some-complicated-home-path' }
+    ]
+    // ...
+    router.goTo('home') // Navigates to route home
     ```
   - `router.dispose()` Properly destroys the router instance.
   - `router.on(event, callback)` To register to the routing events on the router. Available events : `start`, `loaded`, `complete` and `update`.

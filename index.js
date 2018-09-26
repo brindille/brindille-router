@@ -1,6 +1,6 @@
 import createRouter from './router'
 import View from './View'
 import matchRoute from './utils/matchRoute'
-import getRouteByPath from './utils/getRouteByPath'
+import { getRouteByPath, getRouteById } from './utils/getRoute'
 
-export { createRouter, View, matchRoute, getRouteByPath }
+export { createRouter, View, matchRoute, getRouteByPath, getRouteById }

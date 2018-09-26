@@ -4,7 +4,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var equal = _interopDefault(require('deep-equal'));
 var dush = _interopDefault(require('dush'));
 var Component = _interopDefault(require('brindille-component'));
 
@@ -475,7 +474,7 @@ function safeAddTrailingSlash (str = '') {
 }
 
 /**
- * Get a route from a path for a giver list or existing routes, returns first entry of routes if no match is found
+ * Get a route from a path for a given list or existing routes, returns first entry of routes if no match is found
  * @param {String} path path to be tested against routes
  * @param {Array} routes list of routes that path will be tested against
  */
@@ -494,6 +493,28 @@ function getRouteByPath (path, routes = []) {
       return true
     }
     return false
+  });
+  if (route) {
+    return Object.assign({}, route)
+  }
+  return false
+}
+
+
+/**
+ * Get a route from a path for a given list or existing routes, returns first entry of routes if no match is found
+ * @param {String} path path to be tested against routes
+ * @param {Array} routes list of routes that path will be tested against
+ */
+function getRouteById (id, routes = []) {
+  if (!Array.isArray(routes)) {
+    throw new Error('Routes param needs to be an array')
+  }
+  if (!routes.length) {
+    throw new Error('You need at lease one entry in routes param')
+  }
+  const route = routes.find(r => {
+    return id === r.id
   });
   if (route) {
     return Object.assign({}, route)
@@ -625,7 +646,7 @@ function createRouter (app, options = {}, win = window) {
   }
 
   /**
-   * Launch the routing
+   * Launches the routing
    */
   function start () {
     log('start');
@@ -633,6 +654,15 @@ function createRouter (app, options = {}, win = window) {
     win.addEventListener('click', onClick);
     
     onStateUpdate();
+  }
+
+  /**
+   * Stops the routing
+   */
+  function stop () {
+    log('stop');
+    win.removeEventListener('popstate', onStateUpdate);
+    win.removeEventListener('click', onClick);
   }
 
   /**
@@ -644,13 +674,17 @@ function createRouter (app, options = {}, win = window) {
     onStateUpdate();
   }
 
+  function goToId (id) {
+    let route = getRouteById(id, routes);
+    if (route) goTo(route.path);
+  }
+
   /**
    * Destroys the router and cancels any listeners still active
    */
   function dispose () {
     emitter.off('update');
-    win.removeEventListener('popstate', onStateUpdate);
-    win.removeEventListener('click', onClick);
+    stop();
   }
 
   function onStateUpdate () {
@@ -668,7 +702,7 @@ function createRouter (app, options = {}, win = window) {
     }
     
     // Stop handling route when trying to reach the current route path
-    if (equal(newRoute, currentRoute)) return
+    // if (equal(newRoute, currentRoute)) return
 
     // When we start handling the route we tell the app we are busy
     isTransitionning = true;
@@ -705,7 +739,9 @@ function createRouter (app, options = {}, win = window) {
 
   return {
     start,
+    stop,
     goTo,
+    goToId,
     dispose,
 
     get routes () { return routes.slice(0) },
@@ -827,3 +863,4 @@ exports.createRouter = createRouter;
 exports.View = View;
 exports.matchRoute = matchRoute;
 exports.getRouteByPath = getRouteByPath;
+exports.getRouteById = getRouteById;

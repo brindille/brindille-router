@@ -28,3 +28,5 @@ const router = createRouter(app, {
     return window.fetch(baseUrl + path + '/partial.html').then(response => response.text())
   }
 })
+
+router.start()

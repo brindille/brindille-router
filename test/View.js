@@ -221,6 +221,15 @@ test('Goto', t => {
   t.is(router.currentRoute.id, 'about')
 })
 
+test('GotoId', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
+  router.goToId('about')
+  t.is(router.currentRoute.id, 'about')
+  router.goToId('toto')
+  t.is(router.currentRoute.id, 'about')
+})
+
 test('Click event interception on a link tag should trigger routing', t => {
   const { router } = init(t.context.dom, ROUTES, 'home')
   router.start()

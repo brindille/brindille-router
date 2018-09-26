@@ -1,6 +1,5 @@
-import equal from 'deep-equal'
 import dush from 'dush'
-import getRouteByPath from './utils/getRouteByPath'
+import { getRouteByPath, getRouteById } from './utils/getRoute'
 import parseRoutes from './utils/parseRoutes'
 import { checkLink, getUrl } from './utils/checkLink'
 
@@ -59,7 +58,7 @@ export default function createRouter (app, options = {}, win = window) {
   }
 
   /**
-   * Launch the routing
+   * Launches the routing
    */
   function start () {
     log('start')
@@ -67,6 +66,15 @@ export default function createRouter (app, options = {}, win = window) {
     win.addEventListener('click', onClick)
     
     onStateUpdate()
+  }
+
+  /**
+   * Stops the routing
+   */
+  function stop () {
+    log('stop')
+    win.removeEventListener('popstate', onStateUpdate)
+    win.removeEventListener('click', onClick)
   }
 
   /**
@@ -78,13 +86,17 @@ export default function createRouter (app, options = {}, win = window) {
     onStateUpdate()
   }
 
+  function goToId (id) {
+    let route = getRouteById(id, routes)
+    if (route) goTo(route.path)
+  }
+
   /**
    * Destroys the router and cancels any listeners still active
    */
   function dispose () {
     emitter.off('update')
-    win.removeEventListener('popstate', onStateUpdate)
-    win.removeEventListener('click', onClick)
+    stop()
   }
 
   function onStateUpdate () {
@@ -102,7 +114,7 @@ export default function createRouter (app, options = {}, win = window) {
     }
     
     // Stop handling route when trying to reach the current route path
-    if (equal(newRoute, currentRoute)) return
+    // if (equal(newRoute, currentRoute)) return
 
     // When we start handling the route we tell the app we are busy
     isTransitionning = true
@@ -139,7 +151,9 @@ export default function createRouter (app, options = {}, win = window) {
 
   return {
     start,
+    stop,
     goTo,
+    goToId,
     dispose,
 
     get routes () { return routes.slice(0) },

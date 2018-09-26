@@ -23,5 +23,5 @@ export default {
       // namedExports: { './module.js': ['foo', 'bar' ] },  // Default: undefined
     })
   ],
-  external: ['brindille-component', 'deep-equal', 'dush']
+  external: ['brindille-component', 'dush']
 };

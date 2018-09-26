@@ -12,7 +12,6 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "deep-equal": "^1.0.1",
     "dush": "^3.0.5"
   },
   "ava": {
@@ -24,6 +23,11 @@
     "sourceMap": false,
     "instrument": false
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run build"
+    }
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.47",
     "@babel/core": "^7.0.0-beta.47",
@@ -33,6 +37,7 @@
     "babel-plugin-istanbul": "^4.1.6",
     "brindille-component": "^0.0.5",
     "browser-env": "^3.2.5",
+    "husky": "^1.0.0",
     "jsdom": "^11.11.0",
     "nyc": "^11.8.0",
     "rollup": "^0.58.2",
