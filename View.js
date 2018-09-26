@@ -50,6 +50,13 @@ export default class View extends Component {
     }
   }
 
+  getCtor (componentName) {
+    if (typeof this.definitions === 'function') {
+      return this.definitions(componentName)
+    }
+    return this.definitions[componentName]
+  }
+
   createSection (text) {
     const win = this.window || window
     let $node = win.document.createElement('div')
@@ -62,7 +69,7 @@ export default class View extends Component {
     $node = $node.firstChild
 
     let componentName = $node.getAttribute('data-component')
-    let Ctor = this.definitions[componentName]
+    let Ctor = this.getCtor(componentName)
 
     $node.removeAttribute('data-component')
 

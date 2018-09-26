@@ -1,6 +1,5 @@
 import test from 'ava'
 import View from '../View'
-// import Router from '../Router'
 import createRouter from '../router'
 import jsdom from 'jsdom'
 import Component from 'brindille-component'
@@ -55,11 +54,6 @@ const navigate = (pageId, dom) => {
   dom.reconfigure({ url: URL + '/' + pageId })
   const e = new dom.window.Event('popstate', { bubbles: true })
   dom.window.document.dispatchEvent(e)
-}
-
-const createClickEvent = (pageId, dom, tag = 'a') => {
-  const target = createLink(pageId, dom, tag)
-  return { target, currentTarget: target, preventDefault: () => {} }
 }
 
 const createLink = (pageId, dom, tag = 'a') => {
