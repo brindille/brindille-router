@@ -159,7 +159,7 @@ The events you can listen to with `router.on(...)`
   - `update` is an alias for `complete`
 
 ### View
-Utility brindille-component that can display pages when combined with the router. You need to add this class in your definitions of your app.
+Utility brindille-component that can display pages when combined with the router. You need to add this class in your definitions of your app. It will take care of parsing your new Pages for brindille-component they may contain and manage transition orders.
 ```js
 import Component from 'brindille-component'
 import { View, createRouter } from 'brindille-router'
@@ -168,4 +168,15 @@ const app = new Component(document.body, {
   View // You need to add the definition of View in your app
 })
 const router = createRouter(app, { /* ... */ })
+```
+And then use it in your html wherever your want your pages to appear.
+```html
+<body>
+  <div data-component="View">
+    <!--
+    Pages content will be added here
+    It's your job to auto add first view here on page load (SSR)
+    -->
+  </div>
+</body>
 ```
