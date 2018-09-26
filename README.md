@@ -1,7 +1,4 @@
 # brindille-router
-<<<<<<< HEAD
-Router and view system for Brindille
-=======
 Router and view system for Brindille-component
 
 ## Installation
@@ -172,4 +169,3 @@ const app = new Component(document.body, {
 })
 const router = createRouter(app, { /* ... */ })
 ```
->>>>>>> dev
