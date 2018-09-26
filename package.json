@@ -1,0 +1,48 @@
+{
+  "name": "brindille-router",
+  "version": "0.0.1",
+  "description": "All in one Router for Brindille",
+  "main": "bundle.js",
+  "author": "Guillaume Gouessan",
+  "license": "MIT",
+  "repository": "brindille/brindille-router",
+  "scripts": {
+    "test": "nyc ava",
+    "start": "ava --watch",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "dush": "^3.0.5"
+  },
+  "ava": {
+    "require": [
+      "@babel/register"
+    ]
+  },
+  "nyc": {
+    "sourceMap": false,
+    "instrument": false
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run build"
+    }
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.47",
+    "@babel/core": "^7.0.0-beta.47",
+    "@babel/preset-env": "^7.0.0-beta.47",
+    "@babel/register": "^7.0.0-beta.47",
+    "ava": "1.0.0-beta.4",
+    "babel-plugin-istanbul": "^4.1.6",
+    "brindille-component": "^0.0.5",
+    "browser-env": "^3.2.5",
+    "husky": "^1.0.0",
+    "jsdom": "^11.11.0",
+    "nyc": "^11.8.0",
+    "rollup": "^0.58.2",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "sinon": "^6.0.0"
+  }
+}
