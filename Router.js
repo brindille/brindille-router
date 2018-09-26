@@ -103,7 +103,9 @@ export default function createRouter (app, options = {}, win = window) {
 
     // Shift current and previous routes
     previousRoute = currentRoute
-    currentRoute = newRoute
+    currentRoute = Object.assign({ isFirstRoute }, newRoute)
+    
+    emitter.emit('start', currentRoute)
 
     log('route:', currentRoute.id, isFirstRoute ? '(first)' : '')
 
@@ -114,14 +116,19 @@ export default function createRouter (app, options = {}, win = window) {
         .then(routeCompleted)
     } else {  
       getContent(currentRoute, path, baseUrl)
+        .then(content => {
+          emitter.emit('loaded', currentRoute)
+          return content
+        })
         .then(view.showPage)
         .then(routeCompleted)
     }
   }
 
-  function routeCompleted (wasFirstRoute = false) {
+  function routeCompleted () {
     isTransitionning = false
-    emitter.emit('update', Object.assign({ isFirstRoute: wasFirstRoute }, currentRoute))
+    emitter.emit('complete', currentRoute)
+    emitter.emit('update', currentRoute)
   }
 
   return {

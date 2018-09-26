@@ -53,8 +53,10 @@ export default class View extends Component {
   getCtor (componentName) {
     if (typeof this.definitions === 'function') {
       return this.definitions(componentName)
+    } else if (typeof this.definitions === 'object') {
+      return this.definitions[componentName]
     }
-    return this.definitions[componentName]
+    return null
   }
 
   createSection (text) {

@@ -39,10 +39,21 @@ const createBody = (content, dom) => {
   return div
 }
 
-const init = (dom, routes = ROUTES, firstPageId = 'home', options = {}, useWindow = true) => {
+const init = (dom, routes = ROUTES, firstPageId = 'home', options = {}, useWindow = true, useDefinitionFunction = 0) => {
   dom.reconfigure({ url: URL + '/' + firstPageId })
+
+  let definitionsObject = { Section, View }
+  let definitionsFunction = name => definitionsObject[name]
+  
+  let definitions = null
+  if (useDefinitionFunction === 0) {
+    definitions = definitionsObject
+  } else if (useDefinitionFunction === 1) {
+    definitions = definitionsFunction
+  }
+
   const body = createBody(PAGES[firstPageId], dom)
-  const root = new Component(body, { Section, View })
+  const root = new Component(body, definitions)
   const view = root.findInstance('View')
   const router = createRouter(root, Object.assign({ routes, getContent, view }, options), useWindow ? dom.window : undefined)
   dom.window.document.body.appendChild(body)
@@ -299,4 +310,26 @@ test('No view', t => {
     createRouter(root, { routes: ROUTES, getContent }, dom.window)
   })
   t.is(error.message, 'There is no View instance in your brindille App')
+})
+
+test('Ctor with object definitions', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home', {}, true, 0)
+  t.is(Section, view.getCtor('Section'))
+  t.not(View, view.getCtor('Section'))
+  t.falsy(view.getCtor('foo'))
+})
+
+test('Ctor with function definitions', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home', {}, true, 1)
+  t.is(Section, view.getCtor('Section'))
+  t.not(View, view.getCtor('Section'))
+  t.falsy(view.getCtor('foo'))
+})
+
+test('Ctor without definitions', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home', {}, true, 0)
+  view.definitions = undefined
+  t.falsy(view.getCtor('Section'))
+  t.falsy(view.getCtor('Section'))
+  t.falsy(view.getCtor('foo'))
 })

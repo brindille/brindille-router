@@ -19,8 +19,18 @@ import { View, createRouter } from 'brindille-router'
  * In real life you might want to create one class per page
  */
 class Section extends Component {
-  transitionIn (callback) { /* ... */ }
-  transitionOut (callback) { /* ... */ }
+  transitionIn (callback) { 
+    // ...
+    // Do some transition stuff
+    // ...
+    callback() // you need to call callback when you are done with your transition
+  }
+  transitionOut (callback) { 
+    // ...
+    // Do some transition stuff
+    // ...
+    callback() // you need to call callback when you are done with your transition
+  }
 }
 
 /**
@@ -61,7 +71,7 @@ const router = createRouter(app, {
 ```
 
 ## API
-### Router
+### createRouter
 Creates a router instance
 
 **Parameters**
@@ -94,3 +104,43 @@ Creates a router instance
     ```js
     notFoundHandler: path => console.log(path, 'is 404')
     ```
+
+**Methods**
+  - `router.on(event, callback)` To register to the routing events on the router. Available events : `start`, `loaded`, `complete` and `update`.
+  - `router.off(event, callback)` To unregister to the routing events on the router.
+    ```js
+    const router = createRouter(app, { /* ... */ })
+    const onRoute = () => {
+      console.log(route.id, route.path, route.isFirstRoute)
+    }
+    router.on('update', onRoute)
+    // ...
+    router.off('update', onRoute)
+    ```
+
+**Getters**
+  - `router.routes` Gets the array of routes used by the router
+  - `router.currentRoute` Gets the infos for the current route
+  - `router.previousRoute` Gets the infos for the previous route
+  - `router.isTransitionning` Returns true if router is currently changing route, will be set to false automatically when routing for given route is complete.
+  - `router.nbListeners` Gets the number of listeners to the routing event (registerer with `router.on(...)`)
+
+**Events**
+
+The events you can listen to with `router.on(...)`
+  - `start` when trying to navigate to the route, this event will be dispatched if the requested route exists. It happens before the router calls the `getContent` method to grab the new page content.
+  - `loaded` will be dispatched just after the `getContent` method is done and before the view begins the transitions between pages.
+  - `complete` will be dispatched when all transitions from the view are done.
+  - `update` is an alias for `complete`
+
+### View
+Utility brindille-component that can display pages when combined with the router. You need to add this class in your definitions of your app.
+```js
+import Component from 'brindille-component'
+import { View, createRouter } from 'brindille-router'
+
+const app = new Component(document.body, { 
+  View // You need to add the definition of View in your app
+})
+const router = createRouter(app, { /* ... */ })
+```
