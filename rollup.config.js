@@ -11,17 +11,8 @@ export default {
   plugins: [
     resolve(),
     commonjs({
-      // non-CommonJS modules will be ignored, but you can also
-      // specifically include/exclude files
-      include: 'node_modules/**',  // Default: undefined
-      // these values can also be regular expressions
-      // include: /node_modules/
-
-      
-      // explicitly specify unresolvable named exports
-      // (see below for more details)
-      // namedExports: { './module.js': ['foo', 'bar' ] },  // Default: undefined
+      include: 'node_modules/**'
     })
   ],
-  external: ['brindille-component', 'dush']
+  external: ['brindille-component', 'dush', 'path-to-regexp']
 };
