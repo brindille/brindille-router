@@ -226,8 +226,20 @@ test('GotoId', t => {
   router.start()
   router.goToId('about')
   t.is(router.currentRoute.id, 'about')
+})
+
+test('GotoId not exist', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
   router.goToId('toto')
-  t.is(router.currentRoute.id, 'about')
+  t.is(router.currentRoute.id, 'home')
+})
+
+test('GotoId params', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home')
+  router.start()
+  router.goToId('post', { id: 'foo' })
+  t.is(router.currentRoute.id, 'post')
 })
 
 test('Click event interception on a link tag should trigger routing', t => {
@@ -357,4 +369,9 @@ test('Ctor without definitions', t => {
   t.falsy(view.getCtor('Section'))
   t.falsy(view.getCtor('Section'))
   t.falsy(view.getCtor('foo'))
+})
+
+test('baseUrl', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home', { baseUrl: 'foo' }, true, 0)
+  t.is(router.baseUrl, 'foo')
 })

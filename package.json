@@ -1,6 +1,6 @@
 {
   "name": "brindille-router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "All in one Router for Brindille",
   "main": "bundle.js",
   "author": "Guillaume Gouessan",
