@@ -242,9 +242,17 @@ function createRouter (app, options = {}, win = window) {
     onStateUpdate();
   }
 
-  function goToId (id) {
+  function goToId (id, params) {
     let route = getRouteById(id, routes);
-    if (route) goTo(route.path);
+    if (route) {
+      let path = route.path;
+      if (params) {
+        Object.keys(params).forEach(key => {
+          path = path.replace(':' + key, params[key]);
+        });
+      }
+      goTo(path);
+    }
   }
 
   /**
@@ -288,7 +296,7 @@ function createRouter (app, options = {}, win = window) {
       isFirstRoute = false;
       view.showFirstPage()
         .then(routeCompleted);
-    } else {  
+    } else {
       getContent(currentRoute, path, baseUrl)
         .then(content => {
           emitter.emit('loaded', currentRoute);
@@ -311,10 +319,12 @@ function createRouter (app, options = {}, win = window) {
     goTo,
     goToId,
     dispose,
-
+    
     get routes () { return routes.slice(0) },
     get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
     
+    get baseUrl () { return baseUrl },
+
     get currentRoute () { return Object.assign({}, currentRoute) },
     get previousRoute () { return Object.assign({}, previousRoute) },
 
