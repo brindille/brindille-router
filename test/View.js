@@ -21,6 +21,7 @@ function eventFire (el, type, document){
   CONSTANTS
 ------------------------------------ */
 const ROUTES = ['home', 'about', { id: 'post', path: 'post/:id'}]
+const LANGROUTES = [':lang/home', ':lang/about', { id: 'post', path: ':lang/post/:id'}]
 const URL = 'http://foo.bar'
 const PAGES = {
   'home': `<div data-component="Section">home</div>`,
@@ -139,6 +140,14 @@ test('Route with params', t => {
   router.goTo('/post/12')
   t.is(router.currentRoute.id, 'post')
   t.deepEqual(router.currentRoute.params, { id: '12' })
+})
+
+test('Multiple params like langs', t => {
+  const { router } = init(t.context.dom, LANGROUTES, 'home')
+  router.start()
+  router.goTo('/fr/post/12')
+  t.is(router.currentRoute.id, 'post')
+  t.deepEqual(router.currentRoute.params, { lang: 'fr', id: '12' })
 })
 
 test.cb('Navigating to same Route than before', t => {
