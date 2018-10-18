@@ -1,6 +1,7 @@
 import safeAddTrailingSlash from './safeAddTrailingSlash'
 
 export const isSpecialKeypressed = e => e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey
+export const isIgnoredLink = el => el.hasAttribute('data-router-ignore')
 export const isDownloadLink = el => el.hasAttribute('download') || el.getAttribute('rel') === 'external'
 export const isBlank = el => el.target !== undefined && el.target === 'blank'
 export const isDifferentOrigin = (el, win = window) => el.protocol !== win.location.protocol || el.hostname !== win.location.hostname
@@ -25,6 +26,7 @@ export function checkLink (e, win = window) {
     e.defaultPrevented ||
     isSpecialKeypressed(e) ||
     isDownloadLink(el) ||
+    isIgnoredLink(el) ||
     isBlank(el) ||
     isDifferentOrigin(el, win) ||
     isMailto(el)

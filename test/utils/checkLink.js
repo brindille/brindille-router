@@ -4,6 +4,7 @@ import jsdom from 'jsdom'
 import {
   isSpecialKeypressed,
   isDownloadLink,
+  isIgnoredLink,
   isBlank,
   isDifferentOrigin,
   isSameLocation,
@@ -69,6 +70,21 @@ test('isDownloadLink', t => {
   t.false(isDownloadLink(e0))
   t.true(isDownloadLink(e1))
   t.true(isDownloadLink(e2))
+})
+
+/* ------------------------------------------------
+  isIgnoredLink
+------------------------------------------------ */
+test('isIgnoredLink', t => {
+  const dom = t.context.dom
+
+  const e0 = createElementWithAttributes(dom, 'a', {})
+  const e1 = createElementWithAttributes(dom, 'a', { 'data-router-ignore': true })
+  const e2 = createElementWithAttributes(dom, 'a', { 'data-router-ignore': '' })
+
+  t.false(isIgnoredLink(e0))
+  t.true(isIgnoredLink(e1))
+  t.true(isIgnoredLink(e2))
 })
 
 /* ------------------------------------------------

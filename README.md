@@ -180,3 +180,11 @@ And then use it in your html wherever your want your pages to appear.
   </div>
 </body>
 ```
+
+### Avoiding router actions on some links
+When active the router will intercept all internal link clicks to process page change.
+In some cases you might want to avoid this behavior and have a link that just refresh the page. 
+For this you just need to add a `data-router-ignore` attribute to your link tag.
+```html
+<a href="/someroute" data-router-ignore>my link</a>
+```
