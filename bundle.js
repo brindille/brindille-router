@@ -116,6 +116,7 @@ function parseRoutes (routes) {
 }
 
 const isSpecialKeypressed = e => e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+const isIgnoredLink = el => el.hasAttribute('data-router-ignore');
 const isDownloadLink = el => el.hasAttribute('download') || el.getAttribute('rel') === 'external';
 const isBlank = el => el.target !== undefined && el.target === 'blank';
 const isDifferentOrigin = (el, win = window) => el.protocol !== win.location.protocol || el.hostname !== win.location.hostname;
@@ -140,6 +141,7 @@ function checkLink (e, win = window) {
     e.defaultPrevented ||
     isSpecialKeypressed(e) ||
     isDownloadLink(el) ||
+    isIgnoredLink(el) ||
     isBlank(el) ||
     isDifferentOrigin(el, win) ||
     isMailto(el)
