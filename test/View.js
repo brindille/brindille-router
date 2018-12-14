@@ -346,6 +346,16 @@ test('View with no window', t => {
   t.is(error1.message, message)
 })
 
+test.cb('View createSection', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home')
+  const section = view.createSection(PAGES['about'])
+  view.showFirstPage().then(() => {
+    view.addNewPage()
+    t.is(section.$el.innerHTML, 'about')
+    t.end()
+  })
+})
+
 test('No view', t => {
   const dom = t.context.dom
   

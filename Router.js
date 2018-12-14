@@ -30,7 +30,7 @@ export default function createRouter (app, options = {}, win = window) {
   const emitter = dush()
 
   const baseUrl = options.baseUrl || ''
-  const getContent = options.getContent || (route => Promise.resolve(route.id))
+  const getContent = options.getContent || (({ route }) => Promise.resolve(route.id))
   const isVerbose = options.verbose && options.verbose === true
   const notFoundHandler = options.notFoundHandler && typeof options.notFoundHandler === 'function' ? options.notFoundHandler : false
   const routes = parseRoutes(Array.isArray(options.routes) && options.routes.length ? options.routes : ['home'])
@@ -141,7 +141,7 @@ export default function createRouter (app, options = {}, win = window) {
       view.showFirstPage()
         .then(routeCompleted)
     } else {
-      getContent(currentRoute, path, baseUrl)
+      getContent({ route: currentRoute, base: baseUrl, path })
         .then(content => {
           emitter.emit('loaded', currentRoute)
           return content

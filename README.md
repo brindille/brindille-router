@@ -45,7 +45,7 @@ const app = new Component(document.body, { Section, View })
  */
 const router = createRouter(app, {
   routes: ['home', 'about'],
-  getContent: data => fetch(data.path + '.html').then(res => res.text())
+  getContent: ({ route }) => fetch(route.path + '.html').then(res => res.text())
 })
 
 /**
@@ -93,8 +93,8 @@ Creates a router instance
     ```
   - `getContent` **Function** The function that will be used by the router to grab your page content. The idea is for you to fetch your page partials from your server but you could also just pass html string from the js. The getContent method needs to return a Promise that resolves the content as text.
     ```js
-    getContent: data => {
-      return Promise.resolve(`<div>HTML for route: ${ data.route.id }</div>`)
+    getContent: ({ route }) => {
+      return Promise.resolve(`<div>HTML for route: ${ route.route.id }</div>`)
     }
     ```
   - `verbose` **Boolean** if true the Router will log everything it's doing. Defaults to false
