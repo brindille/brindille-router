@@ -301,10 +301,10 @@ function createRouter (app, options = {}, win = window) {
     } else {
       getContent({ route: currentRoute, base: baseUrl, path })
         .then(content => {
+          const p = view.showPage(content);
           emitter.emit('loaded', currentRoute);
-          return content
+          return p
         })
-        .then(view.showPage)
         .then(routeCompleted);
     }
   }

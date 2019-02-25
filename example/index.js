@@ -24,8 +24,8 @@ const router = createRouter(app, {
   verbose: true,
   view: app.findInstance('View'),
   baseUrl: '', // Default
-  getContent: (route, path, baseUrl) => {
-    return window.fetch(baseUrl + path + '/partial.html').then(response => response.text())
+  getContent: ({ path, base }) => {
+    return window.fetch(base + path + '/partial.html').then(response => response.text())
   }
 })
 
