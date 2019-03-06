@@ -18,10 +18,12 @@ export default class View extends Component {
     })
   }
 
-  showPage (content) {
+  showPage (content, beforeCompile) {
     this.content = content
-    this.currentPage = this.createSection(content)
-    return this.transitionOutAndAfterIn()
+    return this.createSection(content, beforeCompile).then(page => {
+      this.currentPage = page
+      return this.transitionOutAndAfterIn()
+    })
   }
 
   transitionOutAndAfterIn () {
@@ -59,13 +61,13 @@ export default class View extends Component {
     return null
   }
 
-  createSection (text) {
+  createSection (text, beforeCompile) {
     const win = this.window || window
     let $node = win.document.createElement('div')
     $node.innerHTML = text
 
     if ($node.firstChild.nodeType === 3) {
-      return $node
+      return Promise.resolve($node)
     }
 
     $node = $node.firstChild
@@ -75,11 +77,17 @@ export default class View extends Component {
 
     $node.removeAttribute('data-component')
 
-    let section = new Ctor($node)
-    section.init(this.definitions)
-    section.componentName = componentName
-    section.parent = this
+    if (!beforeCompile || typeof beforeCompile !== 'function') {
+      beforeCompile = (dom => Promise.resolve(dom))
+    }
+    return beforeCompile($node).then($node => {
+      let section = new Ctor($node)
+      section.init(this.definitions)
+      section.componentName = componentName
+      section.parent = this
+  
+      return section
+    })
 
-    return section
   }
 }

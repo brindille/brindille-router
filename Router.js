@@ -9,6 +9,7 @@ import { checkLink, getUrl } from './utils/checkLink'
  * @param {Object} options
  * @param {String[]|Object[]} options.routes An array of routes (ex: ["home", "contacts"])
  * @param {Function} options.getContent the function that gets your page content, must return a promise that resolves the content of the new page
+ * @param {Function} options.beforeCompile this function is executed on the dom of a new section before any component instanciation, advanced users only
  * @param {Boolean} [options.verbose] If true will log a bunch of stuff for debugging purposes
  * @param {Boolean} [options.notFoundHandler] A method that will be called if requested route does not exists
  * @param {String} [options.baseUrl] a string that will be passed to your getContent method, can be useful for prepending a string to urls
@@ -31,6 +32,7 @@ export default function createRouter (app, options = {}, win = window) {
 
   const baseUrl = options.baseUrl || ''
   const getContent = options.getContent || (({ route }) => Promise.resolve(route.id))
+  const beforeCompile = options.beforeCompile || (dom => Promise.resolve(dom))
   const isVerbose = options.verbose && options.verbose === true
   const notFoundHandler = options.notFoundHandler && typeof options.notFoundHandler === 'function' ? options.notFoundHandler : false
   const routes = parseRoutes(Array.isArray(options.routes) && options.routes.length ? options.routes : ['home'])
@@ -120,9 +122,6 @@ export default function createRouter (app, options = {}, win = window) {
         newRoute = defaultRoute
       }
     }
-    
-    // Stop handling route when trying to reach the current route path
-    // if (equal(newRoute, currentRoute)) return
 
     // When we start handling the route we tell the app we are busy
     isTransitionning = true
@@ -143,7 +142,7 @@ export default function createRouter (app, options = {}, win = window) {
     } else {
       getContent({ route: currentRoute, base: baseUrl, path })
         .then(content => {
-          const p = view.showPage(content)
+          const p = view.showPage(content, beforeCompile)
           emitter.emit('loaded', currentRoute)
           return p
         })

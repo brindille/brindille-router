@@ -24,6 +24,10 @@ const router = createRouter(app, {
   verbose: true,
   view: app.findInstance('View'),
   baseUrl: '', // Default
+  beforeCompile: $node => {
+    // Do some stuff on $node if you need
+    return Promise.resolve($node)
+  },
   getContent: ({ path, base }) => {
     return window.fetch(base + path + '/partial.html').then(response => response.text())
   }

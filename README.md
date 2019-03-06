@@ -97,6 +97,13 @@ Creates a router instance
       return Promise.resolve(`<div>HTML for route: ${ route.route.id }</div>`)
     }
     ```
+  - `beforeCompile` **Function** A function that is called right before the newly created section starts parsing its child for brindille-components. It receives the dom node of the new section and it needs to return a Promise that resolves whenever you are ready for compilation. Useful if you need to make some stuff on dom before compiling.
+    ```js
+    beforeCompile: $node => {
+      // Do some stuff on $node if needed
+      return Promise.resolve($node)
+    }
+    ```
   - `verbose` **Boolean** if true the Router will log everything it's doing. Defaults to false
     ```js
     verbose: false

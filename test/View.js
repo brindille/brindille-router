@@ -34,6 +34,8 @@ const PAGES = {
 ------------------------------------ */
 const getContent = route => Promise.resolve(PAGES[route.id])
 
+const onBeforeCompile = dom => Promise.resolve(dom)
+
 const createBody = (content, dom) => {
   const div = dom.window.document.createElement('div')
   div.innerHTML = `<div data-component="View">${ content }</div>` 
@@ -56,7 +58,7 @@ const init = (dom, routes = ROUTES, firstPageId = 'home', options = {}, useWindo
   const body = createBody(PAGES[firstPageId], dom)
   const root = new Component(body, definitions)
   const view = root.findInstance('View')
-  const router = createRouter(root, Object.assign({ routes, getContent, view }, options), useWindow ? dom.window : undefined)
+  const router = createRouter(root, Object.assign({ routes, getContent, onBeforeCompile, view }, options), useWindow ? dom.window : undefined)
   dom.window.document.body.appendChild(body)
   view.window = dom.window
   return { body, root, router, view }
@@ -348,11 +350,12 @@ test('View with no window', t => {
 
 test.cb('View createSection', t => {
   const { view } = init(t.context.dom, ROUTES, 'home')
-  const section = view.createSection(PAGES['about'])
-  view.showFirstPage().then(() => {
-    view.addNewPage()
-    t.is(section.$el.innerHTML, 'about')
-    t.end()
+  view.createSection(PAGES['about']).then(section => {
+    view.showFirstPage().then(() => {
+      view.addNewPage()
+      t.is(section.$el.innerHTML, 'about')
+      t.end()
+    })
   })
 })
 
@@ -393,4 +396,28 @@ test('Ctor without definitions', t => {
 test('baseUrl', t => {
   const { router } = init(t.context.dom, ROUTES, 'home', { baseUrl: 'foo' }, true, 0)
   t.is(router.baseUrl, 'foo')
+})
+
+test.cb('no before compile argument provided', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home')
+  view.createSection(PAGES['about'], null).then(() => {
+    t.end()
+  })
+})
+
+test.cb('wrong before compile argument provided', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home')
+  view.createSection(PAGES['about'], 'a string').then(() => {
+    t.end()
+  })
+})
+
+test.cb('before compile argument provided', t => {
+  const { view } = init(t.context.dom, ROUTES, 'home')
+  const onBeforeCompile = dom => {
+    console.log('ouaiiiii')
+    t.end()
+    return Promise.resolve(dom)
+  }
+  view.createSection(PAGES['about'], onBeforeCompile)
 })
