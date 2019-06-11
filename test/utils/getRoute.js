@@ -57,3 +57,8 @@ test('Non existing routes getRouteById', t => {
   t.is(error1.message, 'You need at lease one entry in routes param')
   t.is(error2.message, 'Routes param needs to be an array')
 })
+
+test('getRouteByPath from subfolder with baseUrl', t => {
+  t.is(getRouteByPath('/subfolder/foo', routes, '/subfolder').id, 'foo')
+  t.is(getRouteByPath('/subfolder/xyz', routes, '/subfolder').id, 'xyz')
+})

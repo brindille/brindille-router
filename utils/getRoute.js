@@ -6,7 +6,10 @@ import safeAddTrailingSlash from './safeAddTrailingSlash'
  * @param {String} path path to be tested against routes
  * @param {Array} routes list of routes that path will be tested against
  */
-export function getRouteByPath (path, routes = []) {
+export function getRouteByPath (path, routes = [], baseUrl = '') {
+  if (baseUrl !== '') {
+    path = path.replace(baseUrl, '').replace(/\/\//g, '/')
+  }
   path = safeAddTrailingSlash(path)
   if (!Array.isArray(routes)) {
     throw new Error('Routes param needs to be an array')

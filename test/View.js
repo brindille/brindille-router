@@ -398,6 +398,11 @@ test('baseUrl', t => {
   t.is(router.baseUrl, 'foo')
 })
 
+test('baseContent', t => {
+  const { router } = init(t.context.dom, ROUTES, 'home', { baseContent: 'foo' }, true, 0)
+  t.is(router.baseContent, 'foo')
+})
+
 test.cb('no before compile argument provided', t => {
   const { view } = init(t.context.dom, ROUTES, 'home')
   view.createSection(PAGES['about'], null).then(() => {
