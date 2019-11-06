@@ -46,7 +46,10 @@ function safeAddTrailingSlash (str = '') {
  * @param {String} path path to be tested against routes
  * @param {Array} routes list of routes that path will be tested against
  */
-function getRouteByPath (path, routes = []) {
+function getRouteByPath (path, routes = [], baseUrl = '') {
+  if (baseUrl !== '') {
+    path = path.replace(baseUrl, '').replace(/\/\//g, '/');
+  }
   path = safeAddTrailingSlash(path);
   if (!Array.isArray(routes)) {
     throw new Error('Routes param needs to be an array')
@@ -170,7 +173,8 @@ function checkLink (e, win = window) {
  * @param {Function} options.beforeCompile this function is executed on the dom of a new section before any component instanciation, advanced users only
  * @param {Boolean} [options.verbose] If true will log a bunch of stuff for debugging purposes
  * @param {Boolean} [options.notFoundHandler] A method that will be called if requested route does not exists
- * @param {String} [options.baseUrl] a string that will be passed to your getContent method, can be useful for prepending a string to urls
+ * @param {String} [options.baseUrl] Signals if root of the project is hosted in a subfolder, defaults to an empty string
+ * @param {String} [options.baseContent] a string that will be passed to your getContent method, can be useful for prepending a string to urls
  */
 function createRouter (app, options = {}, win = window) {
   if (!app || !app._componentInstances) {
@@ -189,6 +193,7 @@ function createRouter (app, options = {}, win = window) {
   const emitter = dush();
 
   const baseUrl = options.baseUrl || '';
+  const baseContent = options.baseContent || '';
   const getContent = options.getContent || (({ route }) => Promise.resolve(route.id));
   const beforeCompile = options.beforeCompile || (dom => Promise.resolve(dom));
   const isVerbose = options.verbose && options.verbose === true;
@@ -200,6 +205,7 @@ function createRouter (app, options = {}, win = window) {
   let previousRoute = null;
   
   log('baseUrl = "' + baseUrl + '"');
+  log('baseContent = "' + baseContent + '"');
   routes.forEach(route => {
     log('registering route:', route.path);
   });
@@ -272,7 +278,7 @@ function createRouter (app, options = {}, win = window) {
   }
 
   function loadRoute (path) {
-    let newRoute = getRouteByPath(path, routes);
+    let newRoute = getRouteByPath(path, routes, baseUrl);
     if (!newRoute) {
       if (notFoundHandler) {
         return notFoundHandler(path)
@@ -298,7 +304,7 @@ function createRouter (app, options = {}, win = window) {
       view.showFirstPage()
         .then(routeCompleted);
     } else {
-      getContent({ route: currentRoute, base: baseUrl, path })
+      getContent({ route: currentRoute, base: baseContent, path })
         .then(content => {
           const p = view.showPage(content, beforeCompile);
           emitter.emit('loaded', currentRoute);
@@ -325,6 +331,7 @@ function createRouter (app, options = {}, win = window) {
     get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
     
     get baseUrl () { return baseUrl },
+    get baseContent () { return baseContent },
 
     get currentRoute () { return Object.assign({}, currentRoute) },
     get previousRoute () { return Object.assign({}, previousRoute) },

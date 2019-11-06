@@ -40,7 +40,7 @@
     "browser-env": "^3.2.5",
     "husky": "^1.0.0",
     "jsdom": "^11.11.0",
-    "nyc": "^13.3.0",
+    "nyc": "^14.1.1",
     "rollup": "^0.58.2",
     "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-node-resolve": "^3.4.0",
