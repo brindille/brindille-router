@@ -1,6 +1,6 @@
 {
   "name": "brindille-router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "All in one Router for Brindille",
   "main": "bundle.js",
   "author": "Guillaume Gouessan",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "dush": "^3.0.5",
-    "path-to-regexp": "^2.4.0"
+    "path-to-regexp": "^6.1.0"
   },
   "ava": {
     "require": [
@@ -34,16 +34,16 @@
     "@babel/core": "^7.0.0-beta.47",
     "@babel/preset-env": "^7.0.0-beta.47",
     "@babel/register": "^7.0.0-beta.47",
-    "ava": "^1.2.1",
-    "babel-plugin-istanbul": "^5.1.1",
-    "brindille-component": "^0.0.5",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "ava": "^3.5.0",
+    "babel-plugin-istanbul": "^6.0.0",
+    "brindille-component": "0.0.6",
     "browser-env": "^3.2.5",
-    "husky": "^1.0.0",
-    "jsdom": "^11.11.0",
-    "nyc": "^14.1.1",
-    "rollup": "^0.58.2",
-    "rollup-plugin-commonjs": "^9.1.8",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "sinon": "^6.0.0"
+    "husky": "^4.2.3",
+    "jsdom": "^16.2.1",
+    "nyc": "^15.0.0",
+    "rollup": "^2.0.6",
+    "sinon": "^9.0.1"
   }
 }
