@@ -28,7 +28,7 @@ const mockLink = (options = {}) => {
   const dom = options.dom
   const window = dom.window
   dom.reconfigure({ url: options.location })
-  const el = createElementWithAttributes(dom, 'a', { 'href': options.href })
+  const el = createElementWithAttributes(dom, 'a', { href: options.href })
   return {
     target: el,
     preventDefault: () => {}
@@ -64,8 +64,8 @@ test('isDownloadLink', t => {
   const dom = t.context.dom
 
   const e0 = createElementWithAttributes(dom, 'a', {})
-  const e1 = createElementWithAttributes(dom, 'a', { 'download': true })
-  const e2 = createElementWithAttributes(dom, 'a', { 'rel': 'external' })
+  const e1 = createElementWithAttributes(dom, 'a', { download: true })
+  const e2 = createElementWithAttributes(dom, 'a', { rel: 'external' })
 
   t.false(isDownloadLink(e0))
   t.true(isDownloadLink(e1))
@@ -79,7 +79,9 @@ test('isIgnoredLink', t => {
   const dom = t.context.dom
 
   const e0 = createElementWithAttributes(dom, 'a', {})
-  const e1 = createElementWithAttributes(dom, 'a', { 'data-router-ignore': true })
+  const e1 = createElementWithAttributes(dom, 'a', {
+    'data-router-ignore': true
+  })
   const e2 = createElementWithAttributes(dom, 'a', { 'data-router-ignore': '' })
 
   t.false(isIgnoredLink(e0))
@@ -94,7 +96,7 @@ test('isBlank', t => {
   const dom = t.context.dom
 
   const e0 = createElementWithAttributes(dom, 'a', {})
-  const e1 = createElementWithAttributes(dom, 'a', { 'target': 'blank' })
+  const e1 = createElementWithAttributes(dom, 'a', { target: '_blank' })
 
   t.false(isBlank(e0))
   t.true(isBlank(e1))
@@ -109,8 +111,8 @@ test('isDifferentOrigin', t => {
 
   dom.reconfigure({ url: 'http://foo.bar' })
 
-  const e0 = createElementWithAttributes(dom, 'a', { 'href': 'http://foo.bar' })
-  const e1 = createElementWithAttributes(dom, 'a', { 'href': 'http://bar.foo' })
+  const e0 = createElementWithAttributes(dom, 'a', { href: 'http://foo.bar' })
+  const e1 = createElementWithAttributes(dom, 'a', { href: 'http://bar.foo' })
 
   t.false(isDifferentOrigin(e0, window))
   t.true(isDifferentOrigin(e1, window))
@@ -130,17 +132,17 @@ test('isSameLocation', t => {
 
   dom.reconfigure({ url: 'http://foo.bar/home' })
 
-  const e0 = createElementWithAttributes(dom, 'a', { 'href': '/home' })
-  const e1 = createElementWithAttributes(dom, 'a', { 'href': '/about' })
-  
+  const e0 = createElementWithAttributes(dom, 'a', { href: '/home' })
+  const e1 = createElementWithAttributes(dom, 'a', { href: '/about' })
+
   t.true(isSameLocation(e0, window))
   t.false(isSameLocation(e1, window))
 
   dom.reconfigure({ url: 'http://foo.bar/about?t=a' })
 
-  const e2 = createElementWithAttributes(dom, 'a', { 'href': '/about' })
-  const e3 = createElementWithAttributes(dom, 'a', { 'href': '/about?t=a' })
-  const e4 = createElementWithAttributes(dom, 'a', { 'href': '/home?t=a' })
+  const e2 = createElementWithAttributes(dom, 'a', { href: '/about' })
+  const e3 = createElementWithAttributes(dom, 'a', { href: '/about?t=a' })
+  const e4 = createElementWithAttributes(dom, 'a', { href: '/home?t=a' })
 
   t.false(isSameLocation(e2, window))
   t.true(isSameLocation(e3, window))
@@ -158,8 +160,10 @@ test('isSameLocation', t => {
 test('isMailto', t => {
   const dom = t.context.dom
 
-  const e0 = createElementWithAttributes(dom, 'a', { 'href': 'mailto:foo@bar.com' })
-  const e1 = createElementWithAttributes(dom, 'a', { 'href': 'http://bar.foo' })
+  const e0 = createElementWithAttributes(dom, 'a', {
+    href: 'mailto:foo@bar.com'
+  })
+  const e1 = createElementWithAttributes(dom, 'a', { href: 'http://bar.foo' })
 
   t.true(isMailto(e0))
   t.false(isMailto(e1))
@@ -206,9 +210,15 @@ test('getLink', t => {
 test('getUrl', t => {
   const dom = t.context.dom
 
-  const e0 = createElementWithAttributes(dom, 'a', { 'href': 'http://bar.foo/home' })
-  const e1 = createElementWithAttributes(dom, 'a', { 'href': 'http://bar.foo/about?t=1' })
-  const e2 = createElementWithAttributes(dom, 'a', { 'href': 'http://bar.foo/post?t=1#toto' })
+  const e0 = createElementWithAttributes(dom, 'a', {
+    href: 'http://bar.foo/home'
+  })
+  const e1 = createElementWithAttributes(dom, 'a', {
+    href: 'http://bar.foo/about?t=1'
+  })
+  const e2 = createElementWithAttributes(dom, 'a', {
+    href: 'http://bar.foo/post?t=1#toto'
+  })
 
   t.is('/home', getUrl(e0))
   t.is('/about?t=1', getUrl(e1))
