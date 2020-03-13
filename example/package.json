@@ -4,8 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development webpack-serve --open",
-    "build": "webpack -p"
+    "start": "webpack-dev-server"
   },
   "devDependencies": {
     "@babel/core": "^7.7.0",
@@ -15,10 +14,9 @@
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
-    "webpack-serve": "^0.3.2"
+    "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
-    "brindille-component": "^0.0.5",
-    "gsap": "^1.20.6"
+    "brindille-component": "0.0.6"
   }
 }
