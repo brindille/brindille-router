@@ -2,9 +2,9 @@ import test from 'ava'
 import { getRouteByPath, getRouteById } from '../../utils/getRoute'
 
 const routes = [
-  {id: 'foo', path: '/foo'},
-  {id: 'xyz', path: '/xyz'},
-  {id: 'bar', path: '/bar/:id'}
+  { id: 'foo', path: '/foo' },
+  { id: 'xyz', path: '/xyz' },
+  { id: 'bar', path: '/bar/:id' }
 ]
 
 test('Simple getRouteByPath', t => {
