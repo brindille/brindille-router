@@ -4,8 +4,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var pathToRegexp = _interopDefault(require('path-to-regexp'));
 var dush = _interopDefault(require('dush'));
+var pathToRegexp = require('path-to-regexp');
 var Component = _interopDefault(require('brindille-component'));
 
 /**
@@ -13,28 +13,16 @@ var Component = _interopDefault(require('brindille-component'));
  * @param {String} path The path to test
  * @param {RegExp} rule The regexp to test path against
  */
-function matchRoute (path, rule) {
-  let keys = [];
-  const re = pathToRegexp(rule, keys, {});
-  const m = re.exec(path);
-  if (!m) return false
-
-  const params = {};
-  for (let i = 0, l = keys.length; i < l; i++) {
-    const key = keys[i];
-    const param = m[i + 1];
-    if (!param) continue
-    params[key.name] = param;
-    if (key.repeat) params[key.name] = params[key.name].split(key.delimiter);
-  }
-  return params
+function matchRoute(path, rule) {
+  const matcher = pathToRegexp.match(rule);
+  return matcher(path)
 }
 
 /**
  * Adds a slash at the beggining of a string if it does not exists yet
  * @param {String} str the string to which we want to add a slash to in the beginning
  */
-function safeAddTrailingSlash (str = '') {
+function safeAddTrailingSlash(str = '') {
   if (typeof str !== 'string') {
     throw new Error('str should be a string and is a ' + typeof str)
   }
@@ -46,7 +34,7 @@ function safeAddTrailingSlash (str = '') {
  * @param {String} path path to be tested against routes
  * @param {Array} routes list of routes that path will be tested against
  */
-function getRouteByPath (path, routes = [], baseUrl = '') {
+function getRouteByPath(path, routes = [], baseUrl = '') {
   if (baseUrl !== '') {
     path = path.replace(baseUrl, '').replace(/\/\//g, '/');
   }
@@ -58,9 +46,9 @@ function getRouteByPath (path, routes = [], baseUrl = '') {
     throw new Error('You need at lease one entry in routes param')
   }
   const route = routes.find(r => {
-    const params = matchRoute(path, r.path);
-    if (params) {
-      r.params = params;
+    const match = matchRoute(path, r.path);
+    if (match) {
+      r.params = match.params;
       return true
     }
     return false
@@ -71,13 +59,12 @@ function getRouteByPath (path, routes = [], baseUrl = '') {
   return false
 }
 
-
 /**
  * Get a route from a path for a given list or existing routes, returns first entry of routes if no match is found
  * @param {String} path path to be tested against routes
  * @param {Array} routes list of routes that path will be tested against
  */
-function getRouteById (id, routes = []) {
+function getRouteById(id, routes = []) {
   if (!Array.isArray(routes)) {
     throw new Error('Routes param needs to be an array')
   }
@@ -95,9 +82,9 @@ function getRouteById (id, routes = []) {
 
 /**
  * Returns a properly structure route array given a list of route
- * @param {Array.<String|Object>} routes 
+ * @param {Array.<String|Object>} routes
  */
-function parseRoutes (routes) {
+function parseRoutes(routes) {
   if (!Array.isArray(routes)) {
     throw new Error('[Router] routes must be an array')
   }
@@ -109,7 +96,9 @@ function parseRoutes (routes) {
       }
     }
     if (!route || !route.id) {
-      throw new Error('[Router] routes must either be a string or an object with an id')
+      throw new Error(
+        '[Router] routes must either be a string or an object with an id'
+      )
     }
     return {
       id: route.id,
@@ -118,26 +107,33 @@ function parseRoutes (routes) {
   })
 }
 
-const isSpecialKeypressed = e => e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+const isSpecialKeypressed = e =>
+  e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
 const isIgnoredLink = el => el.hasAttribute('data-router-ignore');
-const isDownloadLink = el => el.hasAttribute('download') || el.getAttribute('rel') === 'external';
-const isBlank = el => el.target !== undefined && el.target === 'blank';
-const isDifferentOrigin = (el, win = window) => el.protocol !== win.location.protocol || el.hostname !== win.location.hostname;
-const isSameLocation = (el, win = window) => el.pathname === win.location.pathname && el.search === win.location.search;
-const isMailto = el => el.href !== undefined && el.href.indexOf('mailto:') > -1;
+const isDownloadLink = el =>
+  el.hasAttribute('download') || el.getAttribute('rel') === 'external';
+const isBlank = el => el.target !== undefined && el.target === '_blank';
+const isDifferentOrigin = (el, win = window) =>
+  el.protocol !== win.location.protocol || el.hostname !== win.location.hostname;
+const isSameLocation = (el, win = window) =>
+  el.pathname === win.location.pathname && el.search === win.location.search;
+const isMailto = el =>
+  el.href !== undefined && el.href.indexOf('mailto:') > -1;
 const isLink = el => el && el.nodeName.toUpperCase() === 'A';
-const getLink = el => isLink(el) ? el : (el.parentNode ? getLink(el.parentNode) : null);
-const getUrl = source => safeAddTrailingSlash(source.pathname + source.search + (source.hash || ''));
+const getLink = el =>
+  isLink(el) ? el : el.parentNode ? getLink(el.parentNode) : null;
+const getUrl = source =>
+  safeAddTrailingSlash(source.pathname + source.search + (source.hash || ''));
 
 /**
  * Check if a clicked link is eligible for routing. If it is it will return the link url. If it isn't it will return false
  * @param {Event} e the click event we want to test
  * @param {Window} win the window context to use for the test, you probably don't want to use this param
  */
-function checkLink (e, win = window) {
+function checkLink(e, win = window) {
   // For each click we check if target is link
   let el = getLink(e.target);
-  
+
   // If not link or special cases we ignore the link (self explanatory checks)
   if (
     !el ||
@@ -165,7 +161,7 @@ function checkLink (e, win = window) {
 }
 
 /**
- * 
+ *
  * @param {BrindilleComponent} app An instance of the main brindille component your router will be applied to (usually the body / root component)
  * @param {Object} options
  * @param {String[]|Object[]} options.routes An array of routes (ex: ["home", "contacts"])
@@ -176,11 +172,13 @@ function checkLink (e, win = window) {
  * @param {String} [options.baseUrl] Signals if root of the project is hosted in a subfolder, defaults to an empty string
  * @param {String} [options.baseContent] a string that will be passed to your getContent method, can be useful for prepending a string to urls
  */
-function createRouter (app, options = {}, win = window) {
+function createRouter(app, options = {}, win = window) {
   if (!app || !app._componentInstances) {
-    throw new Error('First param of createRouter needs to be an instance of brindille component')
+    throw new Error(
+      'First param of createRouter needs to be an instance of brindille component'
+    )
   }
-  
+
   const view = app.findInstance('View');
 
   if (!view) {
@@ -189,35 +187,43 @@ function createRouter (app, options = {}, win = window) {
 
   let isFirstRoute = true;
   let isTransitionning = false;
-  
+
   const emitter = dush();
 
   const baseUrl = options.baseUrl || '';
   const baseContent = options.baseContent || '';
-  const getContent = options.getContent || (({ route }) => Promise.resolve(route.id));
+  const getContent =
+    options.getContent || (({ route }) => Promise.resolve(route.id));
   const beforeCompile = options.beforeCompile || (dom => Promise.resolve(dom));
   const isVerbose = options.verbose && options.verbose === true;
-  const notFoundHandler = options.notFoundHandler && typeof options.notFoundHandler === 'function' ? options.notFoundHandler : false;
-  const routes = parseRoutes(Array.isArray(options.routes) && options.routes.length ? options.routes : ['home']);
+  const notFoundHandler =
+    options.notFoundHandler && typeof options.notFoundHandler === 'function'
+      ? options.notFoundHandler
+      : false;
+  const routes = parseRoutes(
+    Array.isArray(options.routes) && options.routes.length
+      ? options.routes
+      : ['home']
+  );
   const defaultRoute = routes[0];
 
   let currentRoute = null;
   let previousRoute = null;
-  
+
   log('baseUrl = "' + baseUrl + '"');
   log('baseContent = "' + baseContent + '"');
   routes.forEach(route => {
     log('registering route:', route.path);
   });
-  
-  function onClick (e) {
+
+  function onClick(e) {
     let link = checkLink(e, win);
     if (link) {
       goTo(link);
     }
   }
 
-  function log (...messages) {
+  function log(...messages) {
     if (isVerbose) {
       console.log('[Router]', ...messages);
     }
@@ -226,18 +232,18 @@ function createRouter (app, options = {}, win = window) {
   /**
    * Launches the routing
    */
-  function start () {
+  function start() {
     log('start');
     win.addEventListener('popstate', onStateUpdate);
     win.addEventListener('click', onClick);
-    
+
     onStateUpdate();
   }
 
   /**
    * Stops the routing
    */
-  function stop () {
+  function stop() {
     log('stop');
     win.removeEventListener('popstate', onStateUpdate);
     win.removeEventListener('click', onClick);
@@ -247,12 +253,12 @@ function createRouter (app, options = {}, win = window) {
    * Navigates to a given internal URL
    * @param {String} url URL to navigate to
    */
-  function goTo (url) {
+  function goTo(url) {
     win.history.pushState(null, null, url);
     onStateUpdate();
   }
 
-  function goToId (id, params) {
+  function goToId(id, params) {
     let route = getRouteById(id, routes);
     if (route) {
       let path = route.path;
@@ -268,16 +274,16 @@ function createRouter (app, options = {}, win = window) {
   /**
    * Destroys the router and cancels any listeners still active
    */
-  function dispose () {
+  function dispose() {
     emitter.off('update');
     stop();
   }
 
-  function onStateUpdate () {
+  function onStateUpdate() {
     loadRoute(getUrl(win.location));
   }
 
-  function loadRoute (path) {
+  function loadRoute(path) {
     let newRoute = getRouteByPath(path, routes, baseUrl);
     if (!newRoute) {
       if (notFoundHandler) {
@@ -293,16 +299,19 @@ function createRouter (app, options = {}, win = window) {
     // Shift current and previous routes
     previousRoute = currentRoute;
     currentRoute = Object.assign({ isFirstRoute }, newRoute);
-    
+
     emitter.emit('start', currentRoute);
 
-    log('route:', currentRoute.id, isFirstRoute ? '(first)' : '');
+    log(
+      'route:',
+      currentRoute.id,
+      (isFirstRoute ? '(first) ' : ' ') + JSON.stringify(currentRoute.params)
+    );
 
     // If current route is first route, the dom is already present, we just need the view to launch transition in of current view
     if (isFirstRoute) {
       isFirstRoute = false;
-      view.showFirstPage()
-        .then(routeCompleted);
+      view.showFirstPage().then(routeCompleted);
     } else {
       getContent({ route: currentRoute, base: baseContent, path })
         .then(content => {
@@ -314,7 +323,7 @@ function createRouter (app, options = {}, win = window) {
     }
   }
 
-  function routeCompleted () {
+  function routeCompleted() {
     isTransitionning = false;
     emitter.emit('complete', currentRoute);
     emitter.emit('update', currentRoute);
@@ -326,17 +335,31 @@ function createRouter (app, options = {}, win = window) {
     goTo,
     goToId,
     dispose,
-    
-    get routes () { return routes.slice(0) },
-    get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
-    
-    get baseUrl () { return baseUrl },
-    get baseContent () { return baseContent },
 
-    get currentRoute () { return Object.assign({}, currentRoute) },
-    get previousRoute () { return Object.assign({}, previousRoute) },
+    get routes() {
+      return routes.slice(0)
+    },
+    get nbListeners() {
+      return emitter._allEvents.update ? emitter._allEvents.update.length : 0
+    },
 
-    get isTransitionning () { return isTransitionning },
+    get baseUrl() {
+      return baseUrl
+    },
+    get baseContent() {
+      return baseContent
+    },
+
+    get currentRoute() {
+      return Object.assign({}, currentRoute)
+    },
+    get previousRoute() {
+      return Object.assign({}, previousRoute)
+    },
+
+    get isTransitionning() {
+      return isTransitionning
+    },
 
     on: (...opt) => emitter.on(...opt),
     off: (...opt) => emitter.off(...opt)
@@ -344,18 +367,22 @@ function createRouter (app, options = {}, win = window) {
 }
 
 /**
- * Calls a function with callback param if it exists 
+ * Calls a function with callback param if it exists
  * or calls callback directly if the function does not exists
- * 
+ *
  * @param {Obkect} object context for method to call
  * @param {String} methodName name of the method to call on object
  * @param {Function} callback the function to be called at the end of method
  */
-function safeCallbackedCall (object, methodName, callback) {
+function safeCallbackedCall(object, methodName, callback) {
   if (!callback || typeof callback !== 'function') {
     throw new Error('The callback param should be a function')
   }
-  if (object && object[methodName] && typeof object[methodName] === 'function') {
+  if (
+    object &&
+    object[methodName] &&
+    typeof object[methodName] === 'function'
+  ) {
     object[methodName](callback);
   } else {
     callback();
@@ -363,14 +390,14 @@ function safeCallbackedCall (object, methodName, callback) {
 }
 
 class View extends Component {
-  constructor ($el) {
+  constructor($el) {
     super($el);
 
     this.showPage = this.showPage.bind(this);
     this.showFirstPage = this.showFirstPage.bind(this);
   }
 
-  showFirstPage () {
+  showFirstPage() {
     return new Promise((resolve, reject) => {
       this.currentPage = this._componentInstances[0];
       safeCallbackedCall(this.currentPage, 'transitionIn', () => {
@@ -379,7 +406,7 @@ class View extends Component {
     })
   }
 
-  showPage (content, beforeCompile) {
+  showPage(content, beforeCompile) {
     this.content = content;
     return this.createSection(content, beforeCompile).then(page => {
       this.currentPage = page;
@@ -387,16 +414,18 @@ class View extends Component {
     })
   }
 
-  transitionOutAndAfterIn () {
+  transitionOutAndAfterIn() {
     return new Promise((resolve, reject) => {
-      const oldPage = this._componentInstances[this._componentInstances.length - 1];
+      const oldPage = this._componentInstances[
+        this._componentInstances.length - 1
+      ];
       safeCallbackedCall(oldPage, 'transitionOut', resolve);
     }).then(() => {
       return this.transitionIn()
     })
   }
 
-  transitionIn () {
+  transitionIn() {
     return new Promise((resolve, reject) => {
       this.disposeChildren();
       this.addNewPage();
@@ -404,7 +433,7 @@ class View extends Component {
     })
   }
 
-  addNewPage () {
+  addNewPage() {
     if (!this.currentPage.$el) {
       this.$el.appendChild(this.currentPage);
     } else {
@@ -413,7 +442,7 @@ class View extends Component {
     }
   }
 
-  getCtor (componentName) {
+  getCtor(componentName) {
     if (typeof this.definitions === 'function') {
       return this.definitions(componentName)
     } else if (typeof this.definitions === 'object') {
@@ -422,7 +451,7 @@ class View extends Component {
     return null
   }
 
-  createSection (text, beforeCompile) {
+  createSection(text, beforeCompile) {
     const win = this.window || window;
     let $node = win.document.createElement('div');
     $node.innerHTML = text;
@@ -439,22 +468,21 @@ class View extends Component {
     $node.removeAttribute('data-component');
 
     if (!beforeCompile || typeof beforeCompile !== 'function') {
-      beforeCompile = (dom => Promise.resolve(dom));
+      beforeCompile = dom => Promise.resolve(dom);
     }
     return beforeCompile($node).then($node => {
       let section = new Ctor($node);
       section.init(this.definitions);
       section.componentName = componentName;
       section.parent = this;
-  
+
       return section
     })
-
   }
 }
 
-exports.createRouter = createRouter;
 exports.View = View;
-exports.matchRoute = matchRoute;
-exports.getRouteByPath = getRouteByPath;
+exports.createRouter = createRouter;
 exports.getRouteById = getRouteById;
+exports.getRouteByPath = getRouteByPath;
+exports.matchRoute = matchRoute;
