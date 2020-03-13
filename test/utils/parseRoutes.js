@@ -29,21 +29,17 @@ test('calling with empty array should not work', t => {
 test('calling with array of strings should work', t => {
   t.deepEqual(
     [
-      {id: 'a', path: '/a'}, 
-      {id: 'b', path: '/b'}
-    ], 
+      { id: 'a', path: '/a' },
+      { id: 'b', path: '/b' }
+    ],
     parseRoutes(['a', 'b'])
   )
-  t.deepEqual(
-    [
-      {id: 'a', path: '/a'}
-    ], 
-    parseRoutes(['a'])
-  )
+  t.deepEqual([{ id: 'a', path: '/a' }], parseRoutes(['a']))
 })
 
 test('calling with array of something else than strings or object should not work', t => {
-  const message = '[Router] routes must either be a string or an object with an id'
+  const message =
+    '[Router] routes must either be a string or an object with an id'
   const e1 = t.throws(() => {
     parseRoutes([1, 2])
   })
@@ -68,9 +64,10 @@ test('calling with array of something else than strings or object should not wor
 })
 
 test('calling with array of objects without proper properties should not work', t => {
-  const message = '[Router] routes must either be a string or an object with an id'
+  const message =
+    '[Router] routes must either be a string or an object with an id'
   const e1 = t.throws(() => {
-    parseRoutes([{foo: 'bar'}])
+    parseRoutes([{ foo: 'bar' }])
   })
   t.is(e1.message, message)
 })
@@ -78,34 +75,24 @@ test('calling with array of objects without proper properties should not work', 
 test('calling with array of objects with ids should work', t => {
   t.deepEqual(
     [
-      {id: 'a', path: '/a'}, 
-      {id: 'b', path: '/b'}
-    ], 
-    parseRoutes([{id: 'a'}, {id: 'b'}])
+      { id: 'a', path: '/a' },
+      { id: 'b', path: '/b' }
+    ],
+    parseRoutes([{ id: 'a' }, { id: 'b' }])
   )
-  t.deepEqual(
-    [
-      {id: 'a', path: '/a'}
-    ], 
-    parseRoutes([{id: 'a'}])
-  )
+  t.deepEqual([{ id: 'a', path: '/a' }], parseRoutes([{ id: 'a' }]))
 })
 
 test('mixing strings and objects should also work', t => {
   t.deepEqual(
     [
-      {id: 'a', path: '/a'}, 
-      {id: 'b', path: '/b'}
-    ], 
-    parseRoutes(['a', {id: 'b'}])
+      { id: 'a', path: '/a' },
+      { id: 'b', path: '/b' }
+    ],
+    parseRoutes(['a', { id: 'b' }])
   )
 })
 
 test('if a path is provided in object, it will be used instead of id', t => {
-  t.deepEqual(
-    [
-      {id: 'a', path: '/b'}
-    ], 
-    parseRoutes([{id: 'a', path: 'b'}])
-  )
+  t.deepEqual([{ id: 'a', path: '/b' }], parseRoutes([{ id: 'a', path: 'b' }]))
 })

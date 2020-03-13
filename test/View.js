@@ -6,7 +6,7 @@ import Component from 'brindille-component'
 import Section from './fixtures/Section'
 import sinon from 'sinon'
 
-function eventFire (el, type, document){
+function eventFire(el, type, document) {
   if (el.fireEvent) {
     el.fireEvent('on' + type)
   } else {
@@ -16,17 +16,20 @@ function eventFire (el, type, document){
   }
 }
 
-
 /* ------------------------------------
   CONSTANTS
 ------------------------------------ */
-const ROUTES = ['home', 'about', { id: 'post', path: 'post/:id'}]
-const LANGROUTES = [':lang/home', ':lang/about', { id: 'post', path: ':lang/post/:id'}]
+const ROUTES = ['home', 'about', { id: 'post', path: 'post/:id' }]
+const LANGROUTES = [
+  ':lang/home',
+  ':lang/about',
+  { id: 'post', path: ':lang/post/:id' }
+]
 const URL = 'http://foo.bar'
 const PAGES = {
-  'home': `<div data-component="Section">home</div>`,
-  'about': `<div data-component="Section">about</div>`,
-  'post': `<div data-component="Section">post</div>`
+  home: `<div data-component="Section">home</div>`,
+  about: `<div data-component="Section">about</div>`,
+  post: `<div data-component="Section">post</div>`
 }
 
 /* ------------------------------------
@@ -38,16 +41,23 @@ const onBeforeCompile = dom => Promise.resolve(dom)
 
 const createBody = (content, dom) => {
   const div = dom.window.document.createElement('div')
-  div.innerHTML = `<div data-component="View">${ content }</div>` 
+  div.innerHTML = `<div data-component="View">${content}</div>`
   return div
 }
 
-const init = (dom, routes = ROUTES, firstPageId = 'home', options = {}, useWindow = true, useDefinitionFunction = 0) => {
+const init = (
+  dom,
+  routes = ROUTES,
+  firstPageId = 'home',
+  options = {},
+  useWindow = true,
+  useDefinitionFunction = 0
+) => {
   dom.reconfigure({ url: URL + '/' + firstPageId })
 
   let definitionsObject = { Section, View }
   let definitionsFunction = name => definitionsObject[name]
-  
+
   let definitions = null
   if (useDefinitionFunction === 0) {
     definitions = definitionsObject
@@ -58,7 +68,11 @@ const init = (dom, routes = ROUTES, firstPageId = 'home', options = {}, useWindo
   const body = createBody(PAGES[firstPageId], dom)
   const root = new Component(body, definitions)
   const view = root.findInstance('View')
-  const router = createRouter(root, Object.assign({ routes, getContent, onBeforeCompile, view }, options), useWindow ? dom.window : undefined)
+  const router = createRouter(
+    root,
+    Object.assign({ routes, getContent, onBeforeCompile, view }, options),
+    useWindow ? dom.window : undefined
+  )
   dom.window.document.body.appendChild(body)
   view.window = dom.window
   return { body, root, router, view }
@@ -84,7 +98,7 @@ test.beforeEach(t => {
 })
 
 test.afterEach(t => {
-	t.context.dom.window.close()
+  t.context.dom.window.close()
 })
 
 /* ------------------------------------
@@ -316,27 +330,33 @@ test('No routes in params defauts to one route (home)', t => {
 })
 
 test('No options at all will be punished!', t => {
-  const message = 'First param of createRouter needs to be an instance of brindille component'
+  const message =
+    'First param of createRouter needs to be an instance of brindille component'
   const error1 = t.throws(() => {
     createRouter(undefined, undefined, t.context.dom.window)
   })
   t.is(error1.message, message)
 })
 
-test.cb('No getContent in params defaults to simple promise that returns route.id', t => {
-  const { router, view } = init(t.context.dom, ROUTES, 'home', { getContent: undefined })
-  router.start()
-  const listener = e => {
-    if (e.isFirstRoute) {
-      router.goTo('/about')
-    } else {
-      router.off('update', listener)
-      t.is(view.$el.innerHTML, '<div>about</div>')
-      t.end()
+test.cb(
+  'No getContent in params defaults to simple promise that returns route.id',
+  t => {
+    const { router, view } = init(t.context.dom, ROUTES, 'home', {
+      getContent: undefined
+    })
+    router.start()
+    const listener = e => {
+      if (e.isFirstRoute) {
+        router.goTo('/about')
+      } else {
+        router.off('update', listener)
+        t.is(view.$el.innerHTML, '<div>about</div>')
+        t.end()
+      }
     }
+    router.on('update', listener)
   }
-  router.on('update', listener)
-})
+)
 
 test('View with no window', t => {
   const { view } = init(t.context.dom, ROUTES, 'home')
@@ -361,7 +381,7 @@ test.cb('View createSection', t => {
 
 test('No view', t => {
   const dom = t.context.dom
-  
+
   dom.reconfigure({ url: URL + '/home' })
   const body = dom.window.document.createElement('div')
   const root = new Component(body, { Section, View })
@@ -394,12 +414,26 @@ test('Ctor without definitions', t => {
 })
 
 test('baseUrl', t => {
-  const { router } = init(t.context.dom, ROUTES, 'home', { baseUrl: 'foo' }, true, 0)
+  const { router } = init(
+    t.context.dom,
+    ROUTES,
+    'home',
+    { baseUrl: 'foo' },
+    true,
+    0
+  )
   t.is(router.baseUrl, 'foo')
 })
 
 test('baseContent', t => {
-  const { router } = init(t.context.dom, ROUTES, 'home', { baseContent: 'foo' }, true, 0)
+  const { router } = init(
+    t.context.dom,
+    ROUTES,
+    'home',
+    { baseContent: 'foo' },
+    true,
+    0
+  )
   t.is(router.baseContent, 'foo')
 })
 

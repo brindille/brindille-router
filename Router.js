@@ -4,7 +4,7 @@ import parseRoutes from './utils/parseRoutes'
 import { checkLink, getUrl } from './utils/checkLink'
 
 /**
- * 
+ *
  * @param {BrindilleComponent} app An instance of the main brindille component your router will be applied to (usually the body / root component)
  * @param {Object} options
  * @param {String[]|Object[]} options.routes An array of routes (ex: ["home", "contacts"])
@@ -15,11 +15,13 @@ import { checkLink, getUrl } from './utils/checkLink'
  * @param {String} [options.baseUrl] Signals if root of the project is hosted in a subfolder, defaults to an empty string
  * @param {String} [options.baseContent] a string that will be passed to your getContent method, can be useful for prepending a string to urls
  */
-export default function createRouter (app, options = {}, win = window) {
+export default function createRouter(app, options = {}, win = window) {
   if (!app || !app._componentInstances) {
-    throw new Error('First param of createRouter needs to be an instance of brindille component')
+    throw new Error(
+      'First param of createRouter needs to be an instance of brindille component'
+    )
   }
-  
+
   const view = app.findInstance('View')
 
   if (!view) {
@@ -28,35 +30,43 @@ export default function createRouter (app, options = {}, win = window) {
 
   let isFirstRoute = true
   let isTransitionning = false
-  
+
   const emitter = dush()
 
   const baseUrl = options.baseUrl || ''
   const baseContent = options.baseContent || ''
-  const getContent = options.getContent || (({ route }) => Promise.resolve(route.id))
+  const getContent =
+    options.getContent || (({ route }) => Promise.resolve(route.id))
   const beforeCompile = options.beforeCompile || (dom => Promise.resolve(dom))
   const isVerbose = options.verbose && options.verbose === true
-  const notFoundHandler = options.notFoundHandler && typeof options.notFoundHandler === 'function' ? options.notFoundHandler : false
-  const routes = parseRoutes(Array.isArray(options.routes) && options.routes.length ? options.routes : ['home'])
+  const notFoundHandler =
+    options.notFoundHandler && typeof options.notFoundHandler === 'function'
+      ? options.notFoundHandler
+      : false
+  const routes = parseRoutes(
+    Array.isArray(options.routes) && options.routes.length
+      ? options.routes
+      : ['home']
+  )
   const defaultRoute = routes[0]
 
   let currentRoute = null
   let previousRoute = null
-  
+
   log('baseUrl = "' + baseUrl + '"')
   log('baseContent = "' + baseContent + '"')
   routes.forEach(route => {
     log('registering route:', route.path)
   })
-  
-  function onClick (e) {
+
+  function onClick(e) {
     let link = checkLink(e, win)
     if (link) {
       goTo(link)
     }
   }
 
-  function log (...messages) {
+  function log(...messages) {
     if (isVerbose) {
       console.log('[Router]', ...messages)
     }
@@ -65,18 +75,18 @@ export default function createRouter (app, options = {}, win = window) {
   /**
    * Launches the routing
    */
-  function start () {
+  function start() {
     log('start')
     win.addEventListener('popstate', onStateUpdate)
     win.addEventListener('click', onClick)
-    
+
     onStateUpdate()
   }
 
   /**
    * Stops the routing
    */
-  function stop () {
+  function stop() {
     log('stop')
     win.removeEventListener('popstate', onStateUpdate)
     win.removeEventListener('click', onClick)
@@ -86,12 +96,12 @@ export default function createRouter (app, options = {}, win = window) {
    * Navigates to a given internal URL
    * @param {String} url URL to navigate to
    */
-  function goTo (url) {
+  function goTo(url) {
     win.history.pushState(null, null, url)
     onStateUpdate()
   }
 
-  function goToId (id, params) {
+  function goToId(id, params) {
     let route = getRouteById(id, routes)
     if (route) {
       let path = route.path
@@ -107,16 +117,16 @@ export default function createRouter (app, options = {}, win = window) {
   /**
    * Destroys the router and cancels any listeners still active
    */
-  function dispose () {
+  function dispose() {
     emitter.off('update')
     stop()
   }
 
-  function onStateUpdate () {
+  function onStateUpdate() {
     loadRoute(getUrl(win.location))
   }
 
-  function loadRoute (path) {
+  function loadRoute(path) {
     let newRoute = getRouteByPath(path, routes, baseUrl)
     if (!newRoute) {
       if (notFoundHandler) {
@@ -132,16 +142,19 @@ export default function createRouter (app, options = {}, win = window) {
     // Shift current and previous routes
     previousRoute = currentRoute
     currentRoute = Object.assign({ isFirstRoute }, newRoute)
-    
+
     emitter.emit('start', currentRoute)
 
-    log('route:', currentRoute.id, isFirstRoute ? '(first)' : '')
+    log(
+      'route:',
+      currentRoute.id,
+      (isFirstRoute ? '(first) ' : ' ') + JSON.stringify(currentRoute.params)
+    )
 
     // If current route is first route, the dom is already present, we just need the view to launch transition in of current view
     if (isFirstRoute) {
       isFirstRoute = false
-      view.showFirstPage()
-        .then(routeCompleted)
+      view.showFirstPage().then(routeCompleted)
     } else {
       getContent({ route: currentRoute, base: baseContent, path })
         .then(content => {
@@ -153,7 +166,7 @@ export default function createRouter (app, options = {}, win = window) {
     }
   }
 
-  function routeCompleted () {
+  function routeCompleted() {
     isTransitionning = false
     emitter.emit('complete', currentRoute)
     emitter.emit('update', currentRoute)
@@ -165,17 +178,31 @@ export default function createRouter (app, options = {}, win = window) {
     goTo,
     goToId,
     dispose,
-    
-    get routes () { return routes.slice(0) },
-    get nbListeners () { return emitter._allEvents.update ? emitter._allEvents.update.length : 0 },
-    
-    get baseUrl () { return baseUrl },
-    get baseContent () { return baseContent },
 
-    get currentRoute () { return Object.assign({}, currentRoute) },
-    get previousRoute () { return Object.assign({}, previousRoute) },
+    get routes() {
+      return routes.slice(0)
+    },
+    get nbListeners() {
+      return emitter._allEvents.update ? emitter._allEvents.update.length : 0
+    },
 
-    get isTransitionning () { return isTransitionning },
+    get baseUrl() {
+      return baseUrl
+    },
+    get baseContent() {
+      return baseContent
+    },
+
+    get currentRoute() {
+      return Object.assign({}, currentRoute)
+    },
+    get previousRoute() {
+      return Object.assign({}, previousRoute)
+    },
+
+    get isTransitionning() {
+      return isTransitionning
+    },
 
     on: (...opt) => emitter.on(...opt),
     off: (...opt) => emitter.off(...opt)

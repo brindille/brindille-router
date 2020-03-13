@@ -1,7 +1,6 @@
 import test from 'ava'
 import safeCallbackedCall from '../../utils/safeCallbackedCall'
 
-
 test('Wrong callback type throws an error', t => {
   const message = 'The callback param should be a function'
   const error1 = t.throws(() => {
@@ -36,6 +35,9 @@ test.cb('calling async function', t => {
   safeCallbackedCall(subject, 'foo', t.end)
 })
 
-test.cb('calling non existing function results to direct call of callbacks', t => {
-  safeCallbackedCall({}, 'foo', t.end)
-})
+test.cb(
+  'calling non existing function results to direct call of callbacks',
+  t => {
+    safeCallbackedCall({}, 'foo', t.end)
+  }
+)
